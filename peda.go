@@ -19,16 +19,22 @@ func Registrasi(mongoenv, dbname, collname string, r *http.Request) string {
 	mconn := SetConnection(mongoenv, dbname)
 	var datauser User
 	err := json.NewDecoder(r.Body).Decode(&datauser)
-	if err != nil {
-		response.Message = "error parsing application/json: " + err.Error()
+	if usernameExists(mongoenv, dbname, datauser) {
+		response.Status = false
+		response.Message = "Username telah dipakai"
 	} else {
 		response.Status = true
-		hash, hashErr := HashPassword(datauser.Password)
-		if hashErr != nil {
-			response.Message = "Gagal Hash Password" + err.Error()
+		if err != nil {
+			response.Message = "error parsing application/json: " + err.Error()
+		} else {
+			response.Status = true
+			hash, hashErr := HashPassword(datauser.Password)
+			if hashErr != nil {
+				response.Message = "Gagal Hash Password" + err.Error()
+			}
+			InsertUserdata(mconn, collname, datauser.Name, datauser.Email, datauser.Username, datauser.Role, hash)
+			response.Message = "Berhasil Input data"
 		}
-		InsertUserdata(mconn, collname, datauser.Username, datauser.Role, hash)
-		response.Message = "Berhasil Input data"
 	}
 	return ReturnStruct(response)
 }
@@ -69,32 +75,6 @@ func HapusUser(mongoenv, dbname, collname string, r *http.Request) string {
 	} else {
 		DeleteUser(mconn, collname, datauser)
 		response.Message = "Berhasil Delete data"
-	}
-	return ReturnStruct(response)
-}
-
-func RegistrasiUserValidasi(mongoenv, dbname, collname string, r *http.Request) string {
-	var response Credential
-	response.Status = false
-	mconn := SetConnection(mongoenv, dbname)
-	var datauser User
-	err := json.NewDecoder(r.Body).Decode(&datauser)
-	if usernameExists(mongoenv, dbname, datauser) {
-		response.Status = false
-		response.Message = "Username telah dipakai"
-	} else {
-		response.Status = true
-		if err != nil {
-			response.Message = "error parsing application/json: " + err.Error()
-		} else {
-			response.Status = true
-			hash, hashErr := HashPassword(datauser.Password)
-			if hashErr != nil {
-				response.Message = "Gagal Hash Password" + err.Error()
-			}
-			InsertUserdata(mconn, collname, datauser.Username, datauser.Role, hash)
-			response.Message = "Berhasil Input data"
-		}
 	}
 	return ReturnStruct(response)
 }
