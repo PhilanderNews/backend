@@ -33,7 +33,7 @@ func Registrasi(mongoenv, dbname, collname string, r *http.Request) string {
 	return ReturnStruct(response)
 }
 
-func LoginUser(privatekey, mongoenv, dbname, collname string, r *http.Request) string {
+func Login(privatekey, mongoenv, dbname, collname string, r *http.Request) string {
 	var response Credential
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
