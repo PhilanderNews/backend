@@ -13,7 +13,7 @@ func ReturnStruct(DataStuct any) string {
 	return string(jsondata)
 }
 
-func RegistrasiUser(mongoenv, dbname, collname string, r *http.Request) string {
+func Registrasi(mongoenv, dbname, collname string, r *http.Request) string {
 	var response Credential
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
