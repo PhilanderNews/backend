@@ -82,17 +82,19 @@ func RegistrasiUserValidasi(mongoenv, dbname, collname string, r *http.Request) 
 	if usernameExists(mongoenv, dbname, datauser) {
 		response.Status = false
 		response.Message = "Username telah dipakai"
-	}
-	if err != nil {
-		response.Message = "error parsing application/json: " + err.Error()
 	} else {
 		response.Status = true
-		hash, hashErr := HashPassword(datauser.Password)
-		if hashErr != nil {
-			response.Message = "Gagal Hash Password" + err.Error()
+		if err != nil {
+			response.Message = "error parsing application/json: " + err.Error()
+		} else {
+			response.Status = true
+			hash, hashErr := HashPassword(datauser.Password)
+			if hashErr != nil {
+				response.Message = "Gagal Hash Password" + err.Error()
+			}
+			InsertUserdata(mconn, collname, datauser.Username, datauser.Role, hash)
+			response.Message = "Berhasil Input data"
 		}
-		InsertUserdata(mconn, collname, datauser.Username, datauser.Role, hash)
-		response.Message = "Berhasil Input data"
 	}
 	return ReturnStruct(response)
 }
