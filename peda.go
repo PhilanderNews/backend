@@ -40,8 +40,6 @@ func Registrasi(mongoenv, dbname, collname string, r *http.Request) string {
 }
 
 func Login(privatekey, mongoenv, dbname, collname string, r *http.Request) string {
-	var response Credential
-	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
 	var datauser User
 	err := json.NewDecoder(r.Body).Decode(&datauser)
@@ -49,12 +47,12 @@ func Login(privatekey, mongoenv, dbname, collname string, r *http.Request) strin
 		return ReturnStruct(CreateToken("error parsing application/json: ", err.Error()))
 	} else {
 		if IsPasswordValid(mconn, collname, datauser) {
-			response.Status = true
+			user := FindUser(mconn, collname, datauser)
 			tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(privatekey))
 			if err != nil {
 				return ReturnStruct(CreateToken("Gagal Encode Token :", err.Error()))
 			} else {
-				return ReturnStruct(CreateToken(tokenstring, datauser))
+				return ReturnStruct(CreateToken(tokenstring, user))
 			}
 		} else {
 			return ReturnStruct(CreateToken("Password Salah", datauser))
