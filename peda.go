@@ -46,22 +46,20 @@ func Login(privatekey, mongoenv, dbname, collname string, r *http.Request) strin
 	var datauser User
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
-		response.Message = "error parsing application/json: " + err.Error()
+		return ReturnStruct(CreateToken("error parsing application/json: ", err.Error()))
 	} else {
 		if IsPasswordValid(mconn, collname, datauser) {
 			response.Status = true
 			tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(privatekey))
 			if err != nil {
-				response.Message = "Gagal Encode Token : " + err.Error()
+				return ReturnStruct(CreateToken("Gagal Encode Token :", err.Error()))
 			} else {
-				response.Message = "Selamat Datang"
-				response.Token = tokenstring
+				return ReturnStruct(CreateToken(tokenstring, datauser))
 			}
 		} else {
-			response.Message = "Password Salah"
+			return ReturnStruct(CreateToken("Password Salah", datauser))
 		}
 	}
-	return ReturnStruct(response)
 }
 
 func HapusUser(mongoenv, dbname, collname string, r *http.Request) string {

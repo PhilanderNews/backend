@@ -114,3 +114,11 @@ func usernameExists(mongoenv, dbname string, userdata User) bool {
 	err := mconn.FindOne(context.Background(), filter).Decode(&user)
 	return err == nil
 }
+
+func CreateToken(token string, data interface{}) Jaja {
+	response := Jaja{
+		Token: token,
+		Data:  data,
+	}
+	return response
+}

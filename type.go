@@ -30,3 +30,8 @@ type ResponseDataUser struct {
 type Response struct {
 	Token string `json:"token,omitempty" bson:"token,omitempty"`
 }
+
+type Jaja struct {
+	Token string      `json:"token" bson:"token"`
+	Data  interface{} `json:"data" bson:"data"`
+}
