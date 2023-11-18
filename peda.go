@@ -40,24 +40,42 @@ func Registrasi(mongoenv, dbname, collname string, r *http.Request) string {
 }
 
 func Login(privatekey, mongoenv, dbname, collname string, r *http.Request) string {
+	var response Credential
+	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
 	var datauser User
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 	if err != nil {
-		return ReturnStruct(CreateToken("error parsing application/json: ", err.Error()))
+		response.Message = "error parsing application/json: " + err.Error()
 	} else {
 		if IsPasswordValid(mconn, collname, datauser) {
 			user := FindUser(mconn, collname, datauser)
 			tokenstring, err := watoken.Encode(datauser.Username, os.Getenv(privatekey))
 			if err != nil {
-				return ReturnStruct(CreateToken("Gagal Encode Token :", err.Error()))
+				return ReturnStruct(response.Message == "Gagal Encode Token :"+err.Error())
 			} else {
-				return ReturnStruct(CreateToken(tokenstring, user))
+				if user.Role == "user" {
+					response.Status = true
+					response.Token = tokenstring
+					response.Message = "User berhasil login"
+					return ReturnStruct(response)
+				}
+				if user.Role == "user" {
+					response.Status = true
+					response.Token = tokenstring
+					response.Message = "Admin berhasil login"
+					return ReturnStruct(response)
+				} else {
+					response.Status = false
+					response.Message = "Akun anda tidak terdaftar dengan role apapun"
+					return ReturnStruct(response)
+				}
 			}
 		} else {
-			return ReturnStruct(CreateToken("Password Salah", datauser))
+			response.Message = "Password Salah"
 		}
 	}
+	return ReturnStruct(response)
 }
 
 func HapusUser(mongoenv, dbname, collname string, r *http.Request) string {
