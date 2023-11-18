@@ -58,12 +58,16 @@ func Login(privatekey, mongoenv, dbname, collname string, r *http.Request) strin
 					response.Status = true
 					response.Token = tokenstring
 					response.Message = "User berhasil login"
+					response.Name = user.Name
+					response.Role = user.Role
 					return ReturnStruct(response)
 				}
-				if user.Role == "user" {
+				if user.Role == "admin" {
 					response.Status = true
 					response.Token = tokenstring
 					response.Message = "Admin berhasil login"
+					response.Name = user.Name
+					response.Role = user.Role
 					return ReturnStruct(response)
 				} else {
 					response.Status = false

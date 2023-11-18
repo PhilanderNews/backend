@@ -19,6 +19,8 @@ type Credential struct {
 	Status  bool   `json:"status" bson:"status"`
 	Token   string `json:"token,omitempty" bson:"token,omitempty"`
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
+	Name    string `json:"nam,omitemptye" bson:"name,omitempty"`
+	Role    string `json:"role,omitempty" bson:"role,omitempty"`
 }
 
 type ResponseDataUser struct {
