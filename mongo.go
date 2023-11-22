@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/aiteung/atdb"
-	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -48,27 +47,6 @@ func CreateNewUserRole(mongoenv *mongo.Database, collname string, userdata User)
 	// Insert the user data into the database
 	return atdb.InsertOneDoc(mongoenv, collname, userdata)
 }
-func CreateUserAndAddedToeken(privatekey string, mongoenv *mongo.Database, collname string, userdata User) interface{} {
-	// Hash the password before storing it
-	hashedPassword, err := HashPassword(userdata.Password)
-	if err != nil {
-		return err
-	}
-	userdata.Password = hashedPassword
-
-	// Insert the user data into the database
-	atdb.InsertOneDoc(mongoenv, collname, userdata)
-
-	// Create a token for the user
-	tokenstring, err := watoken.Encode(userdata.Username, os.Getenv(privatekey))
-	if err != nil {
-		return err
-	}
-	userdata.Token = tokenstring
-
-	// Update the user data in the database
-	return atdb.ReplaceOneDoc(mongoenv, collname, bson.M{"username": userdata.Username}, userdata)
-}
 
 func DeleteUser(mongoenv *mongo.Database, collname string, userdata User) interface{} {
 	filter := bson.M{"username": userdata.Username}
@@ -82,13 +60,6 @@ func FindUser(mongoenv *mongo.Database, collname string, userdata User) User {
 	return atdb.GetOneDoc[User](mongoenv, collname, filter)
 }
 
-func FindUserUser(mongoenv *mongo.Database, collname string, userdata User) User {
-	filter := bson.M{
-		"username": userdata.Username,
-	}
-	return atdb.GetOneDoc[User](mongoenv, collname, filter)
-}
-
 func IsPasswordValid(mongoenv *mongo.Database, collname string, userdata User) bool {
 	filter := bson.M{"username": userdata.Username}
 	res := atdb.GetOneDoc[User](mongoenv, collname, filter)
@@ -96,13 +67,15 @@ func IsPasswordValid(mongoenv *mongo.Database, collname string, userdata User) b
 	return hashChecker
 }
 
-func InsertUserdata(mongoenv *mongo.Database, collname, name, email, username, role, password string) (InsertedID interface{}) {
+func InsertUserdata(mongoenv *mongo.Database, collname, name, email, username, password string, admin, author bool) (InsertedID interface{}) {
 	req := new(User)
 	req.Name = name
 	req.Email = email
 	req.Username = username
 	req.Password = password
-	req.Role = role
+	req.Role.Admin = admin
+	req.Role.Author = author
+	req.Role.User = true
 	return atdb.InsertOneDoc(mongoenv, collname, req)
 }
 
@@ -121,4 +94,35 @@ func CreateToken(token string, data interface{}) Jaja {
 		Data:  data,
 	}
 	return response
+}
+
+//--------------------------------------------------------------------Berita
+
+func idBeritaExists(mongoenv, dbname string, databerita Berita) bool {
+	mconn := SetConnection(mongoenv, dbname).Collection("berita")
+	filter := bson.M{"id": databerita.ID}
+
+	var berita Berita
+	err := mconn.FindOne(context.Background(), filter).Decode(&berita)
+	return err == nil
+}
+
+func InsertBerita(mongoenv *mongo.Database, collname, id, kategori, judul, preview, konten string) (InsertedID interface{}) {
+	req := new(Berita)
+	req.ID = id
+	req.Kategori = kategori
+	req.Judul = judul
+	req.Preview = preview
+	req.Konten = konten
+	return atdb.InsertOneDoc(mongoenv, collname, req)
+}
+
+func GetAllBerita(mongoenv *mongo.Database, collname string) []Berita {
+	berita := atdb.GetAllDoc[[]Berita](mongoenv, collname)
+	return berita
+}
+
+func FindBerita(mongoenv *mongo.Database, collname string, databerita Berita) Berita {
+	filter := bson.M{"id": databerita.ID}
+	return atdb.GetOneDoc[Berita](mongoenv, collname, filter)
 }
