@@ -17,55 +17,9 @@ func SetConnection(mongoenv, dbname string) *mongo.Database {
 	return atdb.MongoConnect(DBmongoinfo)
 }
 
-func CompareUsername(mongoenv *mongo.Database, collname, username string) bool {
-	filter := bson.M{"username": username}
-	err := atdb.GetOneDoc[User](mongoenv, collname, filter)
-	users := err.Username
-	if users == "" {
-		return false
-	}
-	return true
-}
+// ---------------------------------------------------------------------- User
 
-func GetNameAndPassowrd(mongoenv *mongo.Database, collname string) []User {
-	user := atdb.GetAllDoc[[]User](mongoenv, collname)
-	return user
-}
-
-func GetAllUser(mongoenv *mongo.Database, collname string) []User {
-	user := atdb.GetAllDoc[[]User](mongoenv, collname)
-	return user
-}
-func CreateNewUserRole(mongoenv *mongo.Database, collname string, userdata User) interface{} {
-	// Hash the password before storing it
-	hashedPassword, err := HashPassword(userdata.Password)
-	if err != nil {
-		return err
-	}
-	userdata.Password = hashedPassword
-
-	// Insert the user data into the database
-	return atdb.InsertOneDoc(mongoenv, collname, userdata)
-}
-
-func DeleteUser(mongoenv *mongo.Database, collname string, userdata User) interface{} {
-	filter := bson.M{"username": userdata.Username}
-	return atdb.DeleteOneDoc(mongoenv, collname, filter)
-}
-func ReplaceOneDoc(mongoenv *mongo.Database, collname string, filter bson.M, userdata User) interface{} {
-	return atdb.ReplaceOneDoc(mongoenv, collname, filter, userdata)
-}
-func FindUser(mongoenv *mongo.Database, collname string, userdata User) User {
-	filter := bson.M{"username": userdata.Username}
-	return atdb.GetOneDoc[User](mongoenv, collname, filter)
-}
-
-func IsPasswordValid(mongoenv *mongo.Database, collname string, userdata User) bool {
-	filter := bson.M{"username": userdata.Username}
-	res := atdb.GetOneDoc[User](mongoenv, collname, filter)
-	hashChecker := CheckPasswordHash(userdata.Password, res.Password)
-	return hashChecker
-}
+// Create
 
 func InsertUserdata(mongoenv *mongo.Database, collname, name, email, username, password string, admin, author bool) (InsertedID interface{}) {
 	req := new(User)
@@ -79,6 +33,25 @@ func InsertUserdata(mongoenv *mongo.Database, collname, name, email, username, p
 	return atdb.InsertOneDoc(mongoenv, collname, req)
 }
 
+// Read
+
+func GetAllUser(mongoenv *mongo.Database, collname string) []User {
+	user := atdb.GetAllDoc[[]User](mongoenv, collname)
+	return user
+}
+
+func FindUser(mongoenv *mongo.Database, collname string, userdata User) User {
+	filter := bson.M{"username": userdata.Username}
+	return atdb.GetOneDoc[User](mongoenv, collname, filter)
+}
+
+func IsPasswordValid(mongoenv *mongo.Database, collname string, userdata User) bool {
+	filter := bson.M{"username": userdata.Username}
+	res := atdb.GetOneDoc[User](mongoenv, collname, filter)
+	hashChecker := CheckPasswordHash(userdata.Password, res.Password)
+	return hashChecker
+}
+
 func usernameExists(mongoenv, dbname string, userdata User) bool {
 	mconn := SetConnection(mongoenv, dbname).Collection("user")
 	filter := bson.M{"username": userdata.Username}
@@ -88,15 +61,46 @@ func usernameExists(mongoenv, dbname string, userdata User) bool {
 	return err == nil
 }
 
-func CreateToken(token string, data interface{}) Jaja {
-	response := Jaja{
-		Token: token,
-		Data:  data,
-	}
-	return response
+// Update
+
+func EditUser(mongoenv *mongo.Database, collname, name, email, password, role string, admin, author, user bool, userdata User) interface{} {
+	filter := bson.M{"username": userdata.Username}
+	req := new(User)
+	req.Name = name
+	req.Email = email
+	req.Password = password
+	req.Role.Admin = admin
+	req.Role.Author = author
+	req.Role.User = user
+	return atdb.ReplaceOneDoc(mongoenv, collname, filter, req)
 }
 
-//--------------------------------------------------------------------Berita
+// Delete
+
+func DeleteUser(mongoenv *mongo.Database, collname string, userdata User) interface{} {
+	filter := bson.M{"username": userdata.Username}
+	return atdb.DeleteOneDoc(mongoenv, collname, filter)
+}
+
+//-------------------------------------------------------------------- Berita
+
+// Create
+
+func InsertBerita(mongoenv *mongo.Database, collname string, databerita Berita) interface{} {
+	return atdb.InsertOneDoc(mongoenv, collname, databerita)
+}
+
+// Read
+
+func GetAllBerita(mongoenv *mongo.Database, collname string) []Berita {
+	berita := atdb.GetAllDoc[[]Berita](mongoenv, collname)
+	return berita
+}
+
+func FindBerita(mongoenv *mongo.Database, collname string, databerita Berita) Berita {
+	filter := bson.M{"id": databerita.ID}
+	return atdb.GetOneDoc[Berita](mongoenv, collname, filter)
+}
 
 func idBeritaExists(mongoenv, dbname string, databerita Berita) bool {
 	mconn := SetConnection(mongoenv, dbname).Collection("berita")
@@ -107,22 +111,16 @@ func idBeritaExists(mongoenv, dbname string, databerita Berita) bool {
 	return err == nil
 }
 
-func InsertBerita(mongoenv *mongo.Database, collname, id, kategori, judul, preview, konten string) (InsertedID interface{}) {
-	req := new(Berita)
-	req.ID = id
-	req.Kategori = kategori
-	req.Judul = judul
-	req.Preview = preview
-	req.Konten = konten
-	return atdb.InsertOneDoc(mongoenv, collname, req)
-}
+// Update
 
-func GetAllBerita(mongoenv *mongo.Database, collname string) []Berita {
-	berita := atdb.GetAllDoc[[]Berita](mongoenv, collname)
-	return berita
-}
-
-func FindBerita(mongoenv *mongo.Database, collname string, databerita Berita) Berita {
+func EditBerita(mongoenv *mongo.Database, collname string, databerita Berita) interface{} {
 	filter := bson.M{"id": databerita.ID}
-	return atdb.GetOneDoc[Berita](mongoenv, collname, filter)
+	return atdb.ReplaceOneDoc(mongoenv, collname, filter, databerita)
+}
+
+// Delete
+
+func DeleteBerita(mongoenv *mongo.Database, collname string, databerita Berita) interface{} {
+	filter := bson.M{"id": databerita.ID}
+	return atdb.DeleteOneDoc(mongoenv, collname, filter)
 }
