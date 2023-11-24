@@ -174,7 +174,7 @@ func UpdateUser(publickey, mongoenv, dbname, collname string, r *http.Request) s
 						if hashErr != nil {
 							response.Message = "Gagal Hash Password" + err.Error()
 						}
-						EditUser(mconn, collname, datauser.Name, datauser.Email, datauser.Username, hash, datauser.Role.Admin, datauser.Role.Author, datauser.Role.User, datauser)
+						EditUser(mconn, collname, datauser.Name, datauser.Email, datauser.Username, hash, datauser.Role.Admin, datauser.Role.Author, datauser.Role.User)
 						response.Status = true
 						response.Message = "berhasil update " + datauser.Username + " dari database"
 					}
