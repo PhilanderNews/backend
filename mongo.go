@@ -63,15 +63,17 @@ func usernameExists(mongoenv, dbname string, userdata User) bool {
 
 // Update
 
-func EditUser(mongoenv *mongo.Database, collname, name, email, password, role string, admin, author, user bool, userdata User) interface{} {
-	filter := bson.M{"username": userdata.Username}
+func EditUser(mongoenv *mongo.Database, collname, name, email, username, password string, admin, author, user bool) interface{} {
+
 	req := new(User)
 	req.Name = name
 	req.Email = email
+	req.Username = username
 	req.Password = password
 	req.Role.Admin = admin
 	req.Role.Author = author
 	req.Role.User = user
+	filter := bson.M{"username": username}
 	return atdb.ReplaceOneDoc(mongoenv, collname, filter, req)
 }
 
