@@ -1,17 +1,24 @@
 package peda
 
-type User struct {
-	Name     string    `json:"name,omitempty" bson:"name,omitempty"`
-	Email    string    `json:"email,omitempty" bson:"email,omitempty"`
-	Username string    `json:"username" bson:"username"`
-	Password string    `json:"password" bson:"password"`
-	Role     SemuaRole `json:"role,omitempty" bson:"role,omitempty"`
+import (
+	"time"
+)
+
+type Payload struct {
+	Username string    `json:"username"`
+	Role     string    `json:"role"`
+	Exp      time.Time `json:"exp"`
+	Iat      time.Time `json:"iat"`
+	Nbf      time.Time `json:"nbf"`
 }
 
-type SemuaRole struct {
-	Admin  bool `json:"admin" bson:"admin"`
-	Author bool `json:"author" bson:"author"`
-	User   bool `json:"user" bson:"user"`
+type User struct {
+	Name        string `json:"name,omitempty" bson:"name,omitempty"`
+	Email       string `json:"email,omitempty" bson:"email,omitempty"`
+	No_whatsapp string `json:"no_whatsapp" bson:"no_whatsapp"`
+	Username    string `json:"username" bson:"username"`
+	Password    string `json:"password" bson:"password"`
+	Role        string `json:"role,omitempty" bson:"role,omitempty"`
 }
 
 type CredentialUser struct {
@@ -20,11 +27,10 @@ type CredentialUser struct {
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
 	Token   string `json:"token,omitempty" bson:"token,omitempty"`
 }
-type CredentialBerita struct {
+
+type Pesan struct {
 	Status  bool   `json:"status" bson:"status"`
-	Data    Berita `json:"data,omitempty" bson:"data,omitempty"`
-	Message string `json:"message,omitempty" bson:"message,omitempty"`
-	Token   string `json:"token,omitempty" bson:"token,omitempty"`
+	Message string `json:"message" bson:"message"`
 }
 
 type Berita struct {
