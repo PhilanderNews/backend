@@ -21,15 +21,14 @@ func SetConnection(mongoenv, dbname string) *mongo.Database {
 
 // Create
 
-func InsertUserdata(mongoenv *mongo.Database, collname, name, email, username, password string, admin, author bool) (InsertedID interface{}) {
+func InsertUserdata(mongoenv *mongo.Database, collname, name, email, no_whatsapp, username, password, role string) (InsertedID interface{}) {
 	req := new(User)
 	req.Name = name
 	req.Email = email
+	req.No_whatsapp = no_whatsapp
 	req.Username = username
 	req.Password = password
-	req.Role.Admin = admin
-	req.Role.Author = author
-	req.Role.User = true
+	req.Role = role
 	return atdb.InsertOneDoc(mongoenv, collname, req)
 }
 
@@ -63,16 +62,15 @@ func usernameExists(mongoenv, dbname string, userdata User) bool {
 
 // Update
 
-func EditUser(mongoenv *mongo.Database, collname, name, email, username, password string, admin, author, user bool) interface{} {
+func EditUser(mongoenv *mongo.Database, collname, name, email, no_whatsapp, username, password, role string) interface{} {
 
 	req := new(User)
 	req.Name = name
 	req.Email = email
+	req.No_whatsapp = no_whatsapp
 	req.Username = username
 	req.Password = password
-	req.Role.Admin = admin
-	req.Role.Author = author
-	req.Role.User = user
+	req.Role = role
 	filter := bson.M{"username": username}
 	return atdb.ReplaceOneDoc(mongoenv, collname, filter, req)
 }
