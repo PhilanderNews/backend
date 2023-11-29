@@ -63,22 +63,23 @@ func Registrasi(token, mongoenv, dbname, collname string, r *http.Request) strin
 			} else {
 				if datauser.No_whatsapp == "" {
 					response.Message = "nomor whatsapp wajib diisi"
+				} else {
+					InsertUserdata(mconn, collname, datauser.Name, datauser.Email, datauser.No_whatsapp, datauser.Username, hash, datauser.Role)
+					response.Status = true
+					response.Message = "berhasil Input data"
+
+					var username = datauser.Username
+					var password = datauser.Password
+					var nohp = datauser.No_whatsapp
+
+					dt := &wa.TextMessage{
+						To:       nohp,
+						IsGroup:  false,
+						Messages: "Selamat anda berhasil registrasi, berikut adalah username anda: " + username + "\nDan ini adalah password anda: " + password + "\nDisimpan baik baik ya",
+					}
+
+					atapi.PostStructWithToken[atmessage.Response]("Token", os.Getenv(token), dt, "https://api.wa.my.id/api/send/message/text")
 				}
-				InsertUserdata(mconn, collname, datauser.Name, datauser.Email, datauser.No_whatsapp, datauser.Username, hash, datauser.Role)
-				response.Status = true
-				response.Message = "berhasil Input data"
-
-				var username = datauser.Username
-				var password = datauser.Password
-				var nohp = datauser.No_whatsapp
-
-				dt := &wa.TextMessage{
-					To:       nohp,
-					IsGroup:  false,
-					Messages: "Selamat anda berhasil registrasi, berikut adalah username anda: " + username + "\nDan ini adalah password anda: " + password + "\nDisimpan baik baik ya",
-				}
-
-				atapi.PostStructWithToken[atmessage.Response]("Token", os.Getenv(token), dt, "https://api.wa.my.id/api/send/message/text")
 			}
 
 		}
@@ -709,16 +710,18 @@ func HapusKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, r
 		if err != nil {
 			response.Message = "error parsing application/json: " + err.Error()
 		} else {
+			tokenname := DecodeGetName(os.Getenv(publickey), header)
 			tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
 			tokenrole := DecodeGetRole(os.Getenv(publickey), header)
 
 			auth.Username = tokenusername
 
-			if tokenusername == "" || tokenrole == "" {
+			if tokenname == "" || tokenusername == "" || tokenrole == "" {
 				response.Message = "hasil decode tidak ditemukan"
 			} else {
 				if usernameExists(mongoenv, dbname, auth) {
-					if tokenrole == "admin" {
+					namakomentator := FindKomentar(mconn, collkomentar, datakomentar)
+					if tokenrole == "admin" || tokenname == namakomentator.Name {
 						if idBeritaExists(mongoenv, dbname, databerita) {
 							if datakomentar.ID == "" {
 								response.Message = "parameter dari function ini adalah id"
