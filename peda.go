@@ -87,7 +87,7 @@ func Registrasi(token, mongoenv, dbname, collname string, r *http.Request) strin
 }
 
 func Login(token, privatekey, mongoenv, dbname, collname string, r *http.Request) string {
-	var response CredentialUser
+	var response Pesan
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
 	var datauser User
@@ -104,10 +104,6 @@ func Login(token, privatekey, mongoenv, dbname, collname string, r *http.Request
 				return ReturnStruct(response.Message == "gagal encode token :"+err.Error())
 			} else {
 				response.Status = true
-				response.Data.Name = nama
-				response.Data.Email = user.Email
-				response.Data.Username = user.Username
-				response.Data.Role = user.Role
 				response.Token = tokenstring
 				response.Message = "berhasil login"
 
