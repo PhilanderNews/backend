@@ -298,7 +298,7 @@ func AmbilSatuUser(publickey, mongoenv, dbname, collname string, r *http.Request
 							user := FindUser(mconn, collname, datauser)
 							return ReturnStruct(user)
 						} else {
-							response.Message = "berita tidak ditemukan"
+							response.Message = "user tidak ditemukan"
 						}
 					}
 				} else {
@@ -421,8 +421,6 @@ func AmbilSatuBerita(publickey, mongoenv, dbname, colluser, collberita string, r
 		} else {
 			if usernameExists(mongoenv, dbname, auth) {
 				if tokenrole == "admin" || tokenrole == "author" || tokenrole == "user" {
-					idberita := r.URL.Query().Get("page")
-					databerita.ID = idberita
 					if idBeritaExists(mongoenv, dbname, databerita) {
 						berita := FindBerita(mconn, collberita, databerita)
 						return ReturnStruct(berita)
