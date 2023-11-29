@@ -124,3 +124,46 @@ func DeleteBerita(mongoenv *mongo.Database, collname string, databerita Berita) 
 	filter := bson.M{"id": databerita.ID}
 	return atdb.DeleteOneDoc(mongoenv, collname, filter)
 }
+
+//-------------------------------------------------------------------- Komentar
+
+// Create
+
+func InsertKomentar(mongoenv *mongo.Database, collname string, datakomentar Komentar) interface{} {
+	return atdb.InsertOneDoc(mongoenv, collname, datakomentar)
+}
+
+// Read
+
+func GetAllKomentar(mongoenv *mongo.Database, collname string) []Komentar {
+	komentar := atdb.GetAllDoc[[]Komentar](mongoenv, collname)
+	return komentar
+}
+
+func FindKomentar(mongoenv *mongo.Database, collname string, datakomentar Komentar) Komentar {
+	filter := bson.M{"id": datakomentar.ID}
+	return atdb.GetOneDoc[Komentar](mongoenv, collname, filter)
+}
+
+func idKomentarExists(mongoenv, dbname string, datakomentar Komentar) bool {
+	mconn := SetConnection(mongoenv, dbname).Collection("komentar")
+	filter := bson.M{"id": datakomentar.ID}
+
+	var komentar Komentar
+	err := mconn.FindOne(context.Background(), filter).Decode(&komentar)
+	return err == nil
+}
+
+// Update
+
+func EditKomentar(mongoenv *mongo.Database, collname string, datakomentar Komentar) interface{} {
+	filter := bson.M{"id": datakomentar.ID}
+	return atdb.ReplaceOneDoc(mongoenv, collname, filter, datakomentar)
+}
+
+// Delete
+
+func DeleteKomentar(mongoenv *mongo.Database, collname string, datakomentar Komentar) interface{} {
+	filter := bson.M{"id": datakomentar.ID}
+	return atdb.DeleteOneDoc(mongoenv, collname, filter)
+}
