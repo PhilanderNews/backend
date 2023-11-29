@@ -15,11 +15,12 @@ func GenerateKey() (privatekey, publickey string) {
 	return privatekey, publickey
 }
 
-func Encode(username, role, privatekey string) (string, error) {
+func Encode(name, username, role, privatekey string) (string, error) {
 	token := paseto.NewToken()
 	token.SetIssuedAt(time.Now())
 	token.SetNotBefore(time.Now())
 	token.SetExpiration(time.Now().Add(2 * time.Hour))
+	token.SetString("name", name)
 	token.SetString("username", username)
 	token.SetString("role", role)
 	key, err := paseto.NewV4AsymmetricSecretKeyFromHex(privatekey)
@@ -48,6 +49,14 @@ func Decode(publickey, tokenstr string) (payload Payload, err error) {
 	}
 
 	return payload, nil
+}
+
+func DecodeGetName(publickey string, tokenstring string) string {
+	payload, err := Decode(publickey, tokenstring)
+	if err != nil {
+		fmt.Println("Decode DecodeGetId : ", err)
+	}
+	return payload.Name
 }
 
 func DecodeGetUsername(publickey string, tokenstring string) string {
