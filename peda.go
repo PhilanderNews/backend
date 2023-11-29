@@ -325,7 +325,7 @@ func TambahBerita(publickey, mongoenv, dbname, colluser, collberita string, r *h
 		if err != nil {
 			response.Message = "error parsing application/json: " + err.Error()
 		} else {
-			tokenname := DecodeGetUsername(os.Getenv(publickey), header)
+			tokenname := DecodeGetName(os.Getenv(publickey), header)
 			tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
 			tokenrole := DecodeGetRole(os.Getenv(publickey), header)
 
