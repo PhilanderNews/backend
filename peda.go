@@ -60,25 +60,27 @@ func Registrasi(token, mongoenv, dbname, collname string, r *http.Request) strin
 			hash, hashErr := HashPassword(datauser.Password)
 			if hashErr != nil {
 				response.Message = "gagal Hash Password" + err.Error()
-			}
-			if datauser.No_whatsapp == "" {
-				response.Message = "nomor whatsapp wajib diisi"
-			}
-			InsertUserdata(mconn, collname, datauser.Name, datauser.Email, datauser.No_whatsapp, datauser.Username, hash, datauser.Role)
-			response.Status = true
-			response.Message = "berhasil Input data"
+			} else {
+				if datauser.No_whatsapp == "" {
+					response.Message = "nomor whatsapp wajib diisi"
+				}
+				InsertUserdata(mconn, collname, datauser.Name, datauser.Email, datauser.No_whatsapp, datauser.Username, hash, datauser.Role)
+				response.Status = true
+				response.Message = "berhasil Input data"
 
-			var username = datauser.Username
-			var password = datauser.Password
-			var nohp = datauser.No_whatsapp
+				var username = datauser.Username
+				var password = datauser.Password
+				var nohp = datauser.No_whatsapp
 
-			dt := &wa.TextMessage{
-				To:       nohp,
-				IsGroup:  false,
-				Messages: "Selamat anda berhasil registrasi, berikut adalah username anda: " + username + " dan ini adalah password anda: " + password + "\nDisimpan baik baik ya",
+				dt := &wa.TextMessage{
+					To:       nohp,
+					IsGroup:  false,
+					Messages: "Selamat anda berhasil registrasi, berikut adalah username anda: " + username + "\nDan ini adalah password anda: " + password + "\nDisimpan baik baik ya",
+				}
+
+				atapi.PostStructWithToken[atmessage.Response]("Token", os.Getenv(token), dt, "https://api.wa.my.id/api/send/message/text")
 			}
 
-			atapi.PostStructWithToken[atmessage.Response]("Token", os.Getenv(token), dt, "https://api.wa.my.id/api/send/message/text")
 		}
 	}
 	return ReturnStruct(response)
@@ -97,9 +99,9 @@ func Login(token, privatekey, mongoenv, dbname, collname string, r *http.Request
 			user := FindUser(mconn, collname, datauser)
 			var nama = user.Name
 			var nohp = user.No_whatsapp
-			tokenstring, err := Encode(user.Username, user.Role, os.Getenv(privatekey))
-			if err != nil {
-				return ReturnStruct(response.Message == "Gagal Encode Token :"+err.Error())
+			tokenstring, tokenerr := Encode(user.Name, user.Username, user.Role, os.Getenv(privatekey))
+			if tokenerr != nil {
+				return ReturnStruct(response.Message == "gagal encode token :"+err.Error())
 			} else {
 				response.Status = true
 				response.Data.Name = nama
@@ -133,25 +135,26 @@ func HapusUser(publickey, mongoenv, dbname, collname string, r *http.Request) st
 	var auth User
 	var datauser User
 
+	err := json.NewDecoder(r.Body).Decode(&datauser)
+
 	header := r.Header.Get("token")
 
 	if header == "" {
 		response.Message = "header login tidak ditemukan"
 	} else {
-		tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
-		tokenrole := DecodeGetRole(os.Getenv(publickey), header)
-
-		auth.Username = tokenusername
-
-		if tokenusername == "" || tokenrole == "" {
-			response.Message = "hasil decode tidak ditemukan"
+		if err != nil {
+			response.Message = "error parsing application/json: " + err.Error()
 		} else {
-			if usernameExists(mongoenv, dbname, auth) {
-				if tokenrole == "admin" {
-					err := json.NewDecoder(r.Body).Decode(&datauser)
-					if err != nil {
-						response.Message = "error parsing application/json: " + err.Error()
-					} else {
+			tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+			tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+
+			auth.Username = tokenusername
+
+			if tokenusername == "" || tokenrole == "" {
+				response.Message = "hasil decode tidak ditemukan"
+			} else {
+				if usernameExists(mongoenv, dbname, auth) {
+					if tokenrole == "admin" {
 						if datauser.Username == "" {
 							response.Message = "parameter dari function ini adalah username"
 						} else {
@@ -163,12 +166,12 @@ func HapusUser(publickey, mongoenv, dbname, collname string, r *http.Request) st
 								response.Message = "akun yang ingin dihapus tidak ditemukan"
 							}
 						}
+					} else {
+						response.Message = "anda tidak memiliki akses"
 					}
 				} else {
-					response.Message = "anda tidak memiliki akses"
+					response.Message = "akun tidak ditemukan"
 				}
-			} else {
-				response.Message = "akun tidak ditemukan"
 			}
 		}
 	}
@@ -182,25 +185,26 @@ func UpdateUser(publickey, mongoenv, dbname, collname string, r *http.Request) s
 	var auth User
 	var datauser User
 
+	err := json.NewDecoder(r.Body).Decode(&datauser)
+
 	header := r.Header.Get("token")
 
 	if header == "" {
 		response.Message = "header login tidak ditemukan"
 	} else {
-		tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
-		tokenrole := DecodeGetRole(os.Getenv(publickey), header)
-
-		auth.Username = tokenusername //userdata.Username dibuat menjadi checktoken agar userdata.Username dapat digunakan sebagai filter untuk menggunakan function FindUser
-
-		if tokenusername == "" || tokenrole == "" {
-			response.Message = "hasil decode tidak ditemukan"
+		if err != nil {
+			response.Message = "error parsing application/json: " + err.Error()
 		} else {
-			if usernameExists(mongoenv, dbname, auth) {
-				if tokenrole == "admin" {
-					err := json.NewDecoder(r.Body).Decode(&datauser)
-					if err != nil {
-						response.Message = "error parsing application/json: " + err.Error()
-					} else {
+			tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+			tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+
+			auth.Username = tokenusername
+
+			if tokenusername == "" || tokenrole == "" {
+				response.Message = "hasil decode tidak ditemukan"
+			} else {
+				if usernameExists(mongoenv, dbname, auth) {
+					if tokenrole == "admin" {
 						if datauser.Username == "" {
 							response.Message = "parameter dari function ini adalah username"
 						} else {
@@ -216,12 +220,12 @@ func UpdateUser(publickey, mongoenv, dbname, collname string, r *http.Request) s
 								response.Message = "akun yang ingin diedit tidak ditemukan"
 							}
 						}
+					} else {
+						response.Message = "anda tidak memiliki akses"
 					}
 				} else {
-					response.Message = "anda tidak memiliki akses"
+					response.Message = "akun tidak ditemukan"
 				}
-			} else {
-				response.Message = "akun tidak ditemukan"
 			}
 		}
 	}
@@ -233,7 +237,6 @@ func AmbilSemuaUser(publickey, mongoenv, dbname, collname string, r *http.Reques
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
 	var auth User
-	var datauser User
 
 	header := r.Header.Get("token")
 
@@ -250,13 +253,8 @@ func AmbilSemuaUser(publickey, mongoenv, dbname, collname string, r *http.Reques
 		} else {
 			if usernameExists(mongoenv, dbname, auth) {
 				if tokenrole == "admin" {
-					err := json.NewDecoder(r.Body).Decode(&datauser)
-					if err != nil {
-						response.Message = "error parsing application/json: " + err.Error()
-					} else {
-						datauser := GetAllUser(mconn, collname)
-						return ReturnStruct(datauser)
-					}
+					datauser := GetAllUser(mconn, collname)
+					return ReturnStruct(datauser)
 				} else {
 					response.Message = "anda tidak memiliki akses"
 				}
@@ -275,37 +273,38 @@ func AmbilSatuUser(publickey, mongoenv, dbname, collname string, r *http.Request
 	var auth User
 	var datauser User
 
+	err := json.NewDecoder(r.Body).Decode(&datauser)
+
 	header := r.Header.Get("token")
 
 	if header == "" {
 		response.Message = "header login tidak ditemukan"
 	} else {
-		tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
-		tokenrole := DecodeGetRole(os.Getenv(publickey), header)
-
-		auth.Username = tokenusername
-
-		if tokenusername == "" || tokenrole == "" {
-			response.Message = "hasil decode tidak ditemukan"
+		if err != nil {
+			response.Message = "error parsing application/json: " + err.Error()
 		} else {
-			if usernameExists(mongoenv, dbname, auth) {
-				if tokenrole == "admin" {
-					err := json.NewDecoder(r.Body).Decode(&datauser)
-					if err != nil {
-						response.Message = "error parsing application/json: " + err.Error()
-					} else {
+			tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+			tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+
+			auth.Username = tokenusername
+
+			if tokenusername == "" || tokenrole == "" {
+				response.Message = "hasil decode tidak ditemukan"
+			} else {
+				if usernameExists(mongoenv, dbname, auth) {
+					if tokenrole == "admin" {
 						if usernameExists(mongoenv, dbname, datauser) {
 							user := FindUser(mconn, collname, datauser)
 							return ReturnStruct(user)
 						} else {
 							response.Message = "user tidak ditemukan"
 						}
+					} else {
+						response.Message = "anda tidak memiliki akses"
 					}
 				} else {
-					response.Message = "anda tidak memiliki akses"
+					response.Message = "akun tidak ditemukan"
 				}
-			} else {
-				response.Message = "akun tidak ditemukan"
 			}
 		}
 	}
@@ -327,39 +326,35 @@ func TambahBerita(publickey, mongoenv, dbname, colluser, collberita string, r *h
 	if header == "" {
 		response.Message = "header login tidak ditemukan"
 	} else {
-		tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
-		tokenrole := DecodeGetRole(os.Getenv(publickey), header)
-
-		auth.Username = tokenusername
-
-		if tokenusername == "" || tokenrole == "" {
-			response.Message = "hasil decode tidak ditemukan"
+		if err != nil {
+			response.Message = "error parsing application/json: " + err.Error()
 		} else {
-			if usernameExists(mongoenv, dbname, auth) {
-				if tokenrole == "admin" || tokenrole == "author" {
-					if err != nil {
-						response.Message = "error parsing application/json: " + err.Error()
-					} else {
+			tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+			tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+
+			auth.Username = tokenusername
+
+			if tokenusername == "" || tokenrole == "" {
+				response.Message = "hasil decode tidak ditemukan"
+			} else {
+				if usernameExists(mongoenv, dbname, auth) {
+					if tokenrole == "admin" || tokenrole == "author" {
 						if idBeritaExists(mongoenv, dbname, databerita) {
 							response.Message = "ID telah ada"
 						} else {
 							response.Status = true
-							if err != nil {
-								response.Message = "error parsing application/json: " + err.Error()
-							} else {
-								response.Status = true
-								InsertBerita(mconn, collberita, databerita)
-								response.Message = "berhasil Input data"
-							}
+							InsertBerita(mconn, collberita, databerita)
+							response.Message = "berhasil Input data"
 						}
+					} else {
+						response.Message = "anda tidak memiliki akses"
 					}
 				} else {
-					response.Message = "anda tidak memiliki akses"
+					response.Message = "akun tidak ditemukan"
 				}
-			} else {
-				response.Message = "akun tidak ditemukan"
 			}
 		}
+
 	}
 	return ReturnStruct(response)
 }
@@ -404,6 +399,7 @@ func AmbilSatuBerita(publickey, mongoenv, dbname, colluser, collberita string, r
 	mconn := SetConnection(mongoenv, dbname)
 
 	var databerita Berita
+	err := json.NewDecoder(r.Body).Decode(&databerita)
 
 	var auth User
 	header := r.Header.Get("token")
@@ -411,27 +407,31 @@ func AmbilSatuBerita(publickey, mongoenv, dbname, colluser, collberita string, r
 	if header == "" {
 		response.Message = "header login tidak ditemukan"
 	} else {
-		tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
-		tokenrole := DecodeGetRole(os.Getenv(publickey), header)
-
-		auth.Username = tokenusername
-
-		if tokenusername == "" || tokenrole == "" {
-			response.Message = "hasil decode tidak ditemukan"
+		if err != nil {
+			response.Message = "error parsing application/json: " + err.Error()
 		} else {
-			if usernameExists(mongoenv, dbname, auth) {
-				if tokenrole == "admin" || tokenrole == "author" || tokenrole == "user" {
-					if idBeritaExists(mongoenv, dbname, databerita) {
-						berita := FindBerita(mconn, collberita, databerita)
-						return ReturnStruct(berita)
+			tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+			tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+
+			auth.Username = tokenusername
+
+			if tokenusername == "" || tokenrole == "" {
+				response.Message = "hasil decode tidak ditemukan"
+			} else {
+				if usernameExists(mongoenv, dbname, auth) {
+					if tokenrole == "admin" || tokenrole == "author" || tokenrole == "user" {
+						if idBeritaExists(mongoenv, dbname, databerita) {
+							berita := FindBerita(mconn, collberita, databerita)
+							return ReturnStruct(berita)
+						} else {
+							response.Message = "berita tidak ditemukan"
+						}
 					} else {
-						response.Message = "berita tidak ditemukan"
+						response.Message = "anda tidak memiliki akses"
 					}
 				} else {
-					response.Message = "anda tidak memiliki akses"
+					response.Message = "akun tidak ditemukan"
 				}
-			} else {
-				response.Message = "akun tidak ditemukan"
 			}
 		}
 	}
@@ -445,25 +445,26 @@ func HapusBerita(publickey, mongoenv, dbname, colluser, collberita string, r *ht
 	var auth User
 	var databerita Berita
 
+	err := json.NewDecoder(r.Body).Decode(&databerita)
+
 	header := r.Header.Get("token")
 
 	if header == "" {
 		response.Message = "header login tidak ditemukan"
 	} else {
-		tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
-		tokenrole := DecodeGetRole(os.Getenv(publickey), header)
-
-		auth.Username = tokenusername
-
-		if tokenusername == "" || tokenrole == "" {
-			response.Message = "hasil decode tidak ditemukan"
+		if err != nil {
+			response.Message = "error parsing application/json: " + err.Error()
 		} else {
-			if usernameExists(mongoenv, dbname, auth) {
-				if tokenrole == "admin" {
-					err := json.NewDecoder(r.Body).Decode(&databerita)
-					if err != nil {
-						response.Message = "error parsing application/json: " + err.Error()
-					} else {
+			tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+			tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+
+			auth.Username = tokenusername
+
+			if tokenusername == "" || tokenrole == "" {
+				response.Message = "hasil decode tidak ditemukan"
+			} else {
+				if usernameExists(mongoenv, dbname, auth) {
+					if tokenrole == "admin" {
 						if databerita.ID == "" {
 							response.Message = "parameter dari function ini adalah id"
 						} else {
@@ -475,12 +476,12 @@ func HapusBerita(publickey, mongoenv, dbname, colluser, collberita string, r *ht
 								response.Message = "berita tidak ditemukan"
 							}
 						}
+					} else {
+						response.Message = "anda tidak memiliki akses"
 					}
 				} else {
-					response.Message = "anda tidak memiliki akses"
+					response.Message = "akun tidak ditemukan"
 				}
-			} else {
-				response.Message = "akun tidak ditemukan"
 			}
 		}
 	}
@@ -494,25 +495,26 @@ func UpdateBerita(publickey, mongoenv, dbname, colluser, collberita string, r *h
 	var auth User
 	var databerita Berita
 
+	err := json.NewDecoder(r.Body).Decode(&databerita)
+
 	header := r.Header.Get("token")
 
 	if header == "" {
 		response.Message = "header login tidak ditemukan"
 	} else {
-		tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
-		tokenrole := DecodeGetRole(os.Getenv(publickey), header)
-
-		auth.Username = tokenusername
-
-		if tokenusername == "" || tokenrole == "" {
-			response.Message = "hasil decode tidak ditemukan"
+		if err != nil {
+			response.Message = "error parsing application/json: " + err.Error()
 		} else {
-			if usernameExists(mongoenv, dbname, auth) {
-				if tokenrole == "admin" {
-					err := json.NewDecoder(r.Body).Decode(&databerita)
-					if err != nil {
-						response.Message = "error parsing application/json: " + err.Error()
-					} else {
+			tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+			tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+
+			auth.Username = tokenusername
+
+			if tokenusername == "" || tokenrole == "" {
+				response.Message = "hasil decode tidak ditemukan"
+			} else {
+				if usernameExists(mongoenv, dbname, auth) {
+					if tokenrole == "admin" {
 						if databerita.ID == "" {
 							response.Message = "parameter dari function ini adalah id"
 						} else {
@@ -524,12 +526,278 @@ func UpdateBerita(publickey, mongoenv, dbname, colluser, collberita string, r *h
 								response.Message = "berita tidak ditemukan"
 							}
 						}
+					} else {
+						response.Message = "anda tidak memiliki akses"
 					}
 				} else {
-					response.Message = "anda tidak memiliki akses"
+					response.Message = "akun tidak ditemukan"
 				}
+			}
+		}
+	}
+	return ReturnStruct(response)
+}
+
+// ---------------------------------------------------------------------- Komentar
+
+func TambahKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, r *http.Request) string {
+	var response Pesan
+	response.Status = false
+	mconn := SetConnection(mongoenv, dbname)
+	var datakomentar Komentar
+	var databerita Berita
+	databerita.ID = datakomentar.ID_berita
+
+	err := json.NewDecoder(r.Body).Decode(&datakomentar)
+
+	var auth User
+	header := r.Header.Get("token")
+
+	if header == "" {
+		response.Message = "header login tidak ditemukan"
+	} else {
+		if err != nil {
+			response.Message = "error parsing application/json: " + err.Error()
+		} else {
+			tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+			tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+
+			auth.Username = tokenusername
+
+			if tokenusername == "" || tokenrole == "" {
+				response.Message = "hasil decode tidak ditemukan"
 			} else {
-				response.Message = "akun tidak ditemukan"
+				if usernameExists(mongoenv, dbname, auth) {
+					if tokenrole == "admin" || tokenrole == "author" || tokenrole == "user" {
+						if idBeritaExists(mongoenv, dbname, databerita) {
+							if idKomentarExists(mongoenv, dbname, datakomentar) {
+								response.Message = "ID telah ada"
+							} else {
+								response.Status = true
+								InsertKomentar(mconn, collkomentar, datakomentar)
+								response.Message = "berhasil Input data"
+							}
+						} else {
+							response.Message = "berita tidak ditemukan"
+						}
+					} else {
+						response.Message = "anda tidak memiliki akses"
+					}
+				} else {
+					response.Message = "akun tidak ditemukan"
+				}
+			}
+		}
+	}
+	return ReturnStruct(response)
+}
+
+func AmbilSemuaKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, r *http.Request) string {
+	var response Pesan
+	response.Status = false
+	mconn := SetConnection(mongoenv, dbname)
+	var datakomentar Komentar
+	var databerita Berita
+	databerita.ID = datakomentar.ID_berita
+
+	err := json.NewDecoder(r.Body).Decode(&datakomentar)
+
+	var auth User
+	header := r.Header.Get("token")
+
+	if header == "" {
+		response.Message = "header login tidak ditemukan"
+	} else {
+		if err != nil {
+			response.Message = "error parsing application/json: " + err.Error()
+		} else {
+			tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+			tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+
+			auth.Username = tokenusername
+
+			if tokenusername == "" || tokenrole == "" {
+				response.Message = "hasil decode tidak ditemukan"
+			} else {
+				if usernameExists(mongoenv, dbname, auth) {
+					if tokenrole == "admin" || tokenrole == "author" || tokenrole == "user" {
+						if idBeritaExists(mongoenv, dbname, databerita) {
+							datakomentar := GetAllKomentar(mconn, collkomentar)
+							return ReturnStruct(datakomentar)
+						} else {
+							response.Message = "berita tidak ditemukan"
+						}
+					} else {
+						response.Message = "anda tidak memiliki akses"
+					}
+				} else {
+					response.Message = "akun tidak ditemukan"
+				}
+			}
+		}
+	}
+	return ReturnStruct(response)
+}
+
+func AmbilSatuKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, r *http.Request) string {
+	var response Pesan
+	response.Status = false
+	mconn := SetConnection(mongoenv, dbname)
+	var datakomentar Komentar
+	var databerita Berita
+	databerita.ID = datakomentar.ID_berita
+	var auth User
+
+	err := json.NewDecoder(r.Body).Decode(&datakomentar)
+
+	header := r.Header.Get("token")
+
+	if header == "" {
+		response.Message = "header login tidak ditemukan"
+	} else {
+		if err != nil {
+			response.Message = "error parsing application/json: " + err.Error()
+		} else {
+			tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+			tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+
+			auth.Username = tokenusername
+
+			if tokenusername == "" || tokenrole == "" {
+				response.Message = "hasil decode tidak ditemukan"
+			} else {
+				if usernameExists(mongoenv, dbname, auth) {
+					if tokenrole == "admin" || tokenrole == "author" || tokenrole == "user" {
+						if idBeritaExists(mongoenv, dbname, databerita) {
+							if idKomentarExists(mongoenv, dbname, datakomentar) {
+								komentar := FindKomentar(mconn, collkomentar, datakomentar)
+								return ReturnStruct(komentar)
+							} else {
+								response.Message = "komentar tidak ditemukan"
+							}
+						} else {
+							response.Message = "berita tidak ditemukan"
+						}
+					} else {
+						response.Message = "anda tidak memiliki akses"
+					}
+				} else {
+					response.Message = "akun tidak ditemukan"
+				}
+			}
+		}
+	}
+	return ReturnStruct(response)
+}
+
+func HapusKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, r *http.Request) string {
+	var response Pesan
+	response.Status = false
+	mconn := SetConnection(mongoenv, dbname)
+	var auth User
+	var datakomentar Komentar
+	var databerita Berita
+	databerita.ID = datakomentar.ID_berita
+
+	err := json.NewDecoder(r.Body).Decode(&datakomentar)
+
+	header := r.Header.Get("token")
+
+	if header == "" {
+		response.Message = "header login tidak ditemukan"
+	} else {
+		if err != nil {
+			response.Message = "error parsing application/json: " + err.Error()
+		} else {
+			tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+			tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+
+			auth.Username = tokenusername
+
+			if tokenusername == "" || tokenrole == "" {
+				response.Message = "hasil decode tidak ditemukan"
+			} else {
+				if usernameExists(mongoenv, dbname, auth) {
+					if tokenrole == "admin" {
+						if idBeritaExists(mongoenv, dbname, databerita) {
+							if datakomentar.ID == "" {
+								response.Message = "parameter dari function ini adalah id"
+							} else {
+								if idKomentarExists(mongoenv, dbname, datakomentar) {
+									DeleteKomentar(mconn, collkomentar, datakomentar)
+									response.Status = true
+									response.Message = "berhasil hapus " + datakomentar.ID + " dari database"
+								} else {
+									response.Message = "komentar tidak ditemukan"
+								}
+							}
+						} else {
+							response.Message = "berita tidak ditemukan"
+						}
+					} else {
+						response.Message = "anda tidak memiliki akses"
+					}
+				} else {
+					response.Message = "akun tidak ditemukan"
+				}
+			}
+		}
+	}
+	return ReturnStruct(response)
+}
+
+func UpdateKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, r *http.Request) string {
+	var response Pesan
+	response.Status = false
+	mconn := SetConnection(mongoenv, dbname)
+	var auth User
+	var datakomentar Komentar
+	var databerita Berita
+	databerita.ID = datakomentar.ID_berita
+
+	err := json.NewDecoder(r.Body).Decode(&datakomentar)
+
+	header := r.Header.Get("token")
+
+	if header == "" {
+		response.Message = "header login tidak ditemukan"
+	} else {
+		if err != nil {
+			response.Message = "error parsing application/json: " + err.Error()
+		} else {
+			tokenname := DecodeGetName(os.Getenv(publickey), header)
+			tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+			tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+
+			auth.Username = tokenusername
+
+			if tokenname == "" || tokenusername == "" || tokenrole == "" {
+				response.Message = "hasil decode tidak ditemukan"
+			} else {
+				if usernameExists(mongoenv, dbname, auth) {
+					namakomentator := FindKomentar(mconn, collkomentar, datakomentar)
+					if tokenrole == "admin" || tokenname == namakomentator.Name {
+						if idBeritaExists(mongoenv, dbname, databerita) {
+							if datakomentar.ID == "" || datakomentar.Name == "" {
+								response.Message = "parameter dari function ini adalah id"
+							} else {
+								if idKomentarExists(mongoenv, dbname, datakomentar) {
+									EditKomentar(mconn, collkomentar, datakomentar)
+									response.Status = true
+									response.Message = "berhasil update " + datakomentar.ID + " dari database"
+								} else {
+									response.Message = "komentar tidak ditemukan"
+								}
+							}
+						} else {
+							response.Message = "berita tidak ditemukan"
+						}
+					} else {
+						response.Message = "anda tidak memiliki akses"
+					}
+				} else {
+					response.Message = "akun tidak ditemukan"
+				}
 			}
 		}
 	}
