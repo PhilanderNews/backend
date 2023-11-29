@@ -32,6 +32,7 @@ type CredentialUser struct {
 type Pesan struct {
 	Status  bool   `json:"status" bson:"status"`
 	Message string `json:"message" bson:"message"`
+	Token   string `json:"token,omitempty" bson:"token,omitempty"`
 }
 
 type Berita struct {
