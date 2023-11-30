@@ -8,6 +8,9 @@ import (
 var privatekey2 = ""
 var publickey2 = ""
 var encode = ""
+var mongoenv = ""
+var dbname = ""
+var collname = ""
 
 func TestGeneratePaseto(t *testing.T) {
 	privateKey, publicKey := GenerateKey()
@@ -36,4 +39,13 @@ func TestDecode(t *testing.T) {
 	fmt.Println("role :", role)
 	fmt.Println("err : ", err)
 	fmt.Println("payload : ", pay)
+}
+
+func TestUsernameExists(t *testing.T) {
+	userdata := User{
+		Username: "ibrohim",
+		// Lengkapi dengan data pengguna lainnya jika diperlukan
+	}
+	hasil := !usernameExists(mongoenv, dbname, userdata)
+	fmt.Println(hasil)
 }
