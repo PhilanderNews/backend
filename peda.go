@@ -178,16 +178,16 @@ func AmbilSatuUser(publickey, mongoenv, dbname, collname string, r *http.Request
 	var datauser User
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 
+	// Check for JSON decoding errors
+	if err != nil {
+		response.Message = "Error parsing application/json: " + err.Error()
+		return ReturnStruct(response)
+	}
+
 	// Get token and perform basic token validation
 	header := r.Header.Get("token")
 	if header == "" {
 		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check for JSON decoding errors
-	if err != nil {
-		response.Message = "Error parsing application/json: " + err.Error()
 		return ReturnStruct(response)
 	}
 
@@ -277,16 +277,16 @@ func UpdateUser(publickey, mongoenv, dbname, collname string, r *http.Request) s
 	var datauser User
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 
+	// Check for JSON decoding errors
+	if err != nil {
+		response.Message = "Error parsing application/json: " + err.Error()
+		return ReturnStruct(response)
+	}
+
 	// Get token and perform basic token validation
 	header := r.Header.Get("token")
 	if header == "" {
 		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check for JSON decoding errors
-	if err != nil {
-		response.Message = "Error parsing application/json: " + err.Error()
 		return ReturnStruct(response)
 	}
 
@@ -355,16 +355,16 @@ func HapusUser(publickey, mongoenv, dbname, collname string, r *http.Request) st
 	var datauser User
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 
+	// Check for JSON decoding errors
+	if err != nil {
+		response.Message = "Error parsing application/json: " + err.Error()
+		return ReturnStruct(response)
+	}
+
 	// Get token and perform basic token validation
 	header := r.Header.Get("token")
 	if header == "" {
 		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check for JSON decoding errors
-	if err != nil {
-		response.Message = "Error parsing application/json: " + err.Error()
 		return ReturnStruct(response)
 	}
 
@@ -424,17 +424,17 @@ func TambahBerita(publickey, mongoenv, dbname, collname string, r *http.Request)
 	var databerita Berita
 	err := json.NewDecoder(r.Body).Decode(&databerita)
 
+	// Check for JSON decoding errors
+	if err != nil {
+		response.Message = "Error parsing application/json: " + err.Error()
+		return ReturnStruct(response)
+	}
+
 	// Get token and perform basic token validation
 	var auth User
 	header := r.Header.Get("token")
 	if header == "" {
 		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check for JSON decoding errors
-	if err != nil {
-		response.Message = "Error parsing application/json: " + err.Error()
 		return ReturnStruct(response)
 	}
 
@@ -488,17 +488,17 @@ func AmbilSatuBerita(publickey, mongoenv, dbname, collname string, r *http.Reque
 	var databerita Berita
 	err := json.NewDecoder(r.Body).Decode(&databerita)
 
+	// Check for JSON decoding errors
+	if err != nil {
+		response.Message = "Error parsing application/json: " + err.Error()
+		return ReturnStruct(response)
+	}
+
 	// Get token and perform basic token validation
 	var auth User
 	header := r.Header.Get("token")
 	if header == "" {
 		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check for JSON decoding errors
-	if err != nil {
-		response.Message = "Error parsing application/json: " + err.Error()
 		return ReturnStruct(response)
 	}
 
@@ -593,16 +593,16 @@ func UpdateBerita(publickey, mongoenv, dbname, collname string, r *http.Request)
 	var databerita Berita
 	err := json.NewDecoder(r.Body).Decode(&databerita)
 
+	// Check for JSON decoding errors
+	if err != nil {
+		response.Message = "Error parsing application/json: " + err.Error()
+		return ReturnStruct(response)
+	}
+
 	// Get token and perform basic token validation
 	header := r.Header.Get("token")
 	if header == "" {
 		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check for JSON decoding errors
-	if err != nil {
-		response.Message = "Error parsing application/json: " + err.Error()
 		return ReturnStruct(response)
 	}
 
@@ -664,6 +664,12 @@ func HapusBerita(publickey, mongoenv, dbname, collname string, r *http.Request) 
 	var auth User
 	var databerita Berita
 	err := json.NewDecoder(r.Body).Decode(&databerita)
+
+	// Check for JSON decoding errors
+	if err != nil {
+		response.Message = "Error parsing application/json: " + err.Error()
+		return ReturnStruct(response)
+	}
 
 	// Get token and perform basic token validation
 	header := r.Header.Get("token")
@@ -742,16 +748,16 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	var auth User
 	err := json.NewDecoder(r.Body).Decode(&datakomentar)
 
+	// Check for JSON decoding errors
+	if err != nil {
+		response.Message = "Error parsing application/json: " + err.Error()
+		return ReturnStruct(response)
+	}
+
 	// Get token and perform basic token validation
 	header := r.Header.Get("token")
 	if header == "" {
 		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check for JSON decoding errors
-	if err != nil {
-		response.Message = "Error parsing application/json: " + err.Error()
 		return ReturnStruct(response)
 	}
 
@@ -818,16 +824,16 @@ func AmbilSatuKomentar(publickey, mongoenv, dbname, collname string, r *http.Req
 	// Decode JSON request body into datakomentar
 	err := json.NewDecoder(r.Body).Decode(&datakomentar)
 
+	// Check for JSON decoding errors
+	if err != nil {
+		response.Message = "Error parsing application/json: " + err.Error()
+		return ReturnStruct(response)
+	}
+
 	// Get token from request header
 	header := r.Header.Get("token")
 	if header == "" {
 		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check for JSON decoding errors
-	if err != nil {
-		response.Message = "Error parsing application/json: " + err.Error()
 		return ReturnStruct(response)
 	}
 
@@ -924,16 +930,16 @@ func UpdateKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	// Decode body request menjadi struktur Komentar
 	err := json.NewDecoder(r.Body).Decode(&datakomentar)
 
+	// Check for JSON decoding errors
+	if err != nil {
+		response.Message = "Error parsing application/json: " + err.Error()
+		return ReturnStruct(response)
+	}
+
 	// Ambil token dari header request
 	header := r.Header.Get("token")
 	if header == "" {
 		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Validasi error saat parsing JSON
-	if err != nil {
-		response.Message = "Error parsing application/json: " + err.Error()
 		return ReturnStruct(response)
 	}
 
@@ -1014,16 +1020,16 @@ func HapusKomentar(publickey, mongoenv, dbname, collname string, r *http.Request
 	// Decode JSON request body into datakomentar
 	err := json.NewDecoder(r.Body).Decode(&datakomentar)
 
+	// Check for JSON decoding errors
+	if err != nil {
+		response.Message = "Error parsing application/json: " + err.Error()
+		return ReturnStruct(response)
+	}
+
 	// Get token from request header
 	header := r.Header.Get("token")
 	if header == "" {
 		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check for JSON decoding errors
-	if err != nil {
-		response.Message = "Error parsing application/json: " + err.Error()
 		return ReturnStruct(response)
 	}
 
