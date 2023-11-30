@@ -309,7 +309,7 @@ func AmbilSatuUser(publickey, mongoenv, dbname, collname string, r *http.Request
 
 // ---------------------------------------------------------------------- Berita
 
-func TambahBerita(publickey, mongoenv, dbname, colluser, collberita string, r *http.Request) string {
+func TambahBerita(publickey, mongoenv, dbname, collname string, r *http.Request) string {
 	var response Pesan
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
@@ -341,7 +341,7 @@ func TambahBerita(publickey, mongoenv, dbname, colluser, collberita string, r *h
 						} else {
 							response.Status = true
 							databerita.Penulis = tokenname
-							InsertBerita(mconn, collberita, databerita)
+							InsertBerita(mconn, collname, databerita)
 							response.Message = "berhasil Input data"
 						}
 					} else {
@@ -357,7 +357,7 @@ func TambahBerita(publickey, mongoenv, dbname, colluser, collberita string, r *h
 	return ReturnStruct(response)
 }
 
-func AmbilSemuaBerita(publickey, mongoenv, dbname, colluser, collberita string, r *http.Request) string {
+func AmbilSemuaBerita(publickey, mongoenv, dbname, collname string, r *http.Request) string {
 	var response Pesan
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
@@ -378,7 +378,7 @@ func AmbilSemuaBerita(publickey, mongoenv, dbname, colluser, collberita string, 
 		} else {
 			if usernameExists(mongoenv, dbname, auth) {
 				if tokenrole == "admin" || tokenrole == "author" || tokenrole == "user" {
-					databerita := GetAllBerita(mconn, collberita)
+					databerita := GetAllBerita(mconn, collname)
 					return ReturnStruct(databerita)
 				} else {
 					response.Message = "anda tidak memiliki akses"
@@ -391,7 +391,7 @@ func AmbilSemuaBerita(publickey, mongoenv, dbname, colluser, collberita string, 
 	return ReturnStruct(response)
 }
 
-func AmbilSatuBerita(publickey, mongoenv, dbname, colluser, collberita string, r *http.Request) string {
+func AmbilSatuBerita(publickey, mongoenv, dbname, collname string, r *http.Request) string {
 	var response Pesan
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
@@ -419,7 +419,7 @@ func AmbilSatuBerita(publickey, mongoenv, dbname, colluser, collberita string, r
 				if usernameExists(mongoenv, dbname, auth) {
 					if tokenrole == "admin" || tokenrole == "author" || tokenrole == "user" {
 						if idBeritaExists(mongoenv, dbname, databerita) {
-							berita := FindBerita(mconn, collberita, databerita)
+							berita := FindBerita(mconn, collname, databerita)
 							return ReturnStruct(berita)
 						} else {
 							response.Message = "berita tidak ditemukan"
@@ -436,7 +436,7 @@ func AmbilSatuBerita(publickey, mongoenv, dbname, colluser, collberita string, r
 	return ReturnStruct(response)
 }
 
-func HapusBerita(publickey, mongoenv, dbname, colluser, collberita string, r *http.Request) string {
+func HapusBerita(publickey, mongoenv, dbname, collname string, r *http.Request) string {
 	var response Pesan
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
@@ -466,10 +466,10 @@ func HapusBerita(publickey, mongoenv, dbname, colluser, collberita string, r *ht
 					if databerita.ID == "" {
 						response.Message = "parameter dari function ini adalah id"
 					} else {
-						namapenulis := FindBerita(mconn, collberita, databerita)
+						namapenulis := FindBerita(mconn, collname, databerita)
 						if tokenrole == "admin" || tokenname == namapenulis.Penulis {
 							if idBeritaExists(mongoenv, dbname, databerita) {
-								DeleteBerita(mconn, collberita, databerita)
+								DeleteBerita(mconn, collname, databerita)
 								response.Status = true
 								response.Message = "berhasil hapus " + databerita.ID + " dari database"
 							} else {
@@ -488,7 +488,7 @@ func HapusBerita(publickey, mongoenv, dbname, colluser, collberita string, r *ht
 	return ReturnStruct(response)
 }
 
-func UpdateBerita(publickey, mongoenv, dbname, colluser, collberita string, r *http.Request) string {
+func UpdateBerita(publickey, mongoenv, dbname, collname string, r *http.Request) string {
 	var response Pesan
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
@@ -518,11 +518,11 @@ func UpdateBerita(publickey, mongoenv, dbname, colluser, collberita string, r *h
 					if databerita.ID == "" {
 						response.Message = "parameter dari function ini adalah id"
 					} else {
-						namapenulis := FindBerita(mconn, collberita, databerita)
+						namapenulis := FindBerita(mconn, collname, databerita)
 						if tokenrole == "admin" || tokenname == namapenulis.Penulis {
 							if idBeritaExists(mongoenv, dbname, databerita) {
 								databerita.Penulis = tokenname
-								EditBerita(mconn, collberita, databerita)
+								EditBerita(mconn, collname, databerita)
 								response.Status = true
 								response.Message = "berhasil update " + databerita.ID + " dari database"
 							} else {
@@ -543,7 +543,7 @@ func UpdateBerita(publickey, mongoenv, dbname, colluser, collberita string, r *h
 
 // ---------------------------------------------------------------------- Komentar
 
-func TambahKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, r *http.Request) string {
+func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Request) string {
 	var response Pesan
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
@@ -579,7 +579,7 @@ func TambahKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, 
 							} else {
 								response.Status = true
 								datakomentar.Name = tokenname
-								InsertKomentar(mconn, collkomentar, datakomentar)
+								InsertKomentar(mconn, collname, datakomentar)
 								response.Message = "berhasil Input data"
 							}
 						} else {
@@ -597,7 +597,7 @@ func TambahKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, 
 	return ReturnStruct(response)
 }
 
-func AmbilSemuaKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, r *http.Request) string {
+func AmbilSemuaKomentar(publickey, mongoenv, dbname, collname string, r *http.Request) string {
 	var response Pesan
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
@@ -627,7 +627,7 @@ func AmbilSemuaKomentar(publickey, mongoenv, dbname, colluser, collkomentar stri
 				if usernameExists(mongoenv, dbname, auth) {
 					if tokenrole == "admin" || tokenrole == "author" || tokenrole == "user" {
 						if idBeritaExists(mongoenv, dbname, databerita) {
-							datakomentar := GetAllKomentar(mconn, collkomentar)
+							datakomentar := GetAllKomentar(mconn, collname)
 							return ReturnStruct(datakomentar)
 						} else {
 							response.Message = "berita tidak ditemukan"
@@ -644,7 +644,7 @@ func AmbilSemuaKomentar(publickey, mongoenv, dbname, colluser, collkomentar stri
 	return ReturnStruct(response)
 }
 
-func AmbilSatuKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, r *http.Request) string {
+func AmbilSatuKomentar(publickey, mongoenv, dbname, collname string, r *http.Request) string {
 	var response Pesan
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
@@ -675,7 +675,7 @@ func AmbilSatuKomentar(publickey, mongoenv, dbname, colluser, collkomentar strin
 					if tokenrole == "admin" || tokenrole == "author" || tokenrole == "user" {
 						if idBeritaExists(mongoenv, dbname, databerita) {
 							if idKomentarExists(mongoenv, dbname, datakomentar) {
-								komentar := FindKomentar(mconn, collkomentar, datakomentar)
+								komentar := FindKomentar(mconn, collname, datakomentar)
 								return ReturnStruct(komentar)
 							} else {
 								response.Message = "komentar tidak ditemukan"
@@ -695,7 +695,7 @@ func AmbilSatuKomentar(publickey, mongoenv, dbname, colluser, collkomentar strin
 	return ReturnStruct(response)
 }
 
-func HapusKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, r *http.Request) string {
+func HapusKomentar(publickey, mongoenv, dbname, collname string, r *http.Request) string {
 	var response Pesan
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
@@ -728,10 +728,10 @@ func HapusKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, r
 						if datakomentar.ID == "" {
 							response.Message = "parameter dari function ini adalah id"
 						} else {
-							namakomentator := FindKomentar(mconn, collkomentar, datakomentar)
+							namakomentator := FindKomentar(mconn, collname, datakomentar)
 							if tokenrole == "admin" || tokenname == namakomentator.Name {
 								if idKomentarExists(mongoenv, dbname, datakomentar) {
-									DeleteKomentar(mconn, collkomentar, datakomentar)
+									DeleteKomentar(mconn, collname, datakomentar)
 									response.Status = true
 									response.Message = "berhasil hapus " + datakomentar.ID + " dari database"
 								} else {
@@ -753,7 +753,7 @@ func HapusKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, r
 	return ReturnStruct(response)
 }
 
-func UpdateKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, r *http.Request) string {
+func UpdateKomentar(publickey, mongoenv, dbname, collname string, r *http.Request) string {
 	var response Pesan
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
@@ -786,10 +786,10 @@ func UpdateKomentar(publickey, mongoenv, dbname, colluser, collkomentar string, 
 						response.Message = "parameter dari function ini adalah id"
 					} else {
 						if idBeritaExists(mongoenv, dbname, databerita) {
-							namakomentator := FindKomentar(mconn, collkomentar, datakomentar)
+							namakomentator := FindKomentar(mconn, collname, datakomentar)
 							if tokenrole == "admin" || tokenname == namakomentator.Name {
 								if idKomentarExists(mongoenv, dbname, datakomentar) {
-									EditKomentar(mconn, collkomentar, datakomentar)
+									EditKomentar(mconn, collname, datakomentar)
 									response.Status = true
 									datakomentar.Name = tokenname
 									response.Message = "berhasil update " + datakomentar.ID + " dari database"
