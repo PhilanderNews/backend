@@ -531,6 +531,12 @@ func AmbilSatuBerita(publickey, mongoenv, dbname, collname string, r *http.Reque
 		return ReturnStruct(response)
 	}
 
+	// Check if the berita ID parameter is provided
+	if databerita.ID == "" {
+		response.Message = "Parameter dari function ini adalah ID"
+		return ReturnStruct(response)
+	}
+
 	// Check if the berita exists
 	if idBeritaExists(mongoenv, dbname, databerita) {
 		// Fetch berita data from the database
@@ -631,18 +637,18 @@ func UpdateBerita(publickey, mongoenv, dbname, collname string, r *http.Request)
 		return ReturnStruct(response)
 	}
 
-	// Check if the berita ID parameter is provided
-	if databerita.ID == "" {
-		response.Message = "Parameter dari function ini adalah ID"
-		return ReturnStruct(response)
-	}
-
 	// Fetch berita data from the database
 	namapenulis := FindBerita(mconn, collname, databerita)
 
 	// Check if the user is not an admin or not the author of the berita
-	if !(tokenrole == "admin" || tokenname == namapenulis.Penulis) {
+	if tokenrole != "admin" || tokenname != namapenulis.Penulis {
 		response.Message = "Anda tidak memiliki akses"
+		return ReturnStruct(response)
+	}
+
+	// Check if the berita ID parameter is provided
+	if databerita.ID == "" {
+		response.Message = "Parameter dari function ini adalah ID"
 		return ReturnStruct(response)
 	}
 
@@ -709,8 +715,11 @@ func HapusBerita(publickey, mongoenv, dbname, collname string, r *http.Request) 
 		return ReturnStruct(response)
 	}
 
+	// Fetch berita data from the database
+	namapenulis := FindBerita(mconn, collname, databerita)
+
 	// Check if the user has admin or author privileges
-	if tokenrole != "admin" && tokenname != databerita.Penulis {
+	if tokenrole != "admin" || tokenname != namapenulis.Penulis {
 		response.Message = "Anda tidak memiliki akses"
 		return ReturnStruct(response)
 	}
@@ -723,17 +732,9 @@ func HapusBerita(publickey, mongoenv, dbname, collname string, r *http.Request) 
 
 	// Check if the berita exists
 	if idBeritaExists(mongoenv, dbname, databerita) {
-		// Fetch berita data from the database
-		namapenulis := FindBerita(mconn, collname, databerita)
-
-		// Check if the user has admin or is the author of the berita
-		if tokenrole == "admin" || tokenname == namapenulis.Penulis {
-			DeleteBerita(mconn, collname, databerita)
-			response.Status = true
-			response.Message = "Berhasil hapus " + databerita.ID + " dari database"
-		} else {
-			response.Message = "Anda tidak memiliki akses"
-		}
+		DeleteBerita(mconn, collname, databerita)
+		response.Status = true
+		response.Message = "Berhasil hapus " + databerita.ID + " dari database"
 	} else {
 		response.Message = "Berita tidak ditemukan"
 	}
@@ -786,8 +787,26 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	}
 
 	// Check user role
-	if !(tokenrole == "admin" || tokenrole == "author" || tokenrole == "user") {
+	if tokenrole != "admin" && tokenrole != "author" && tokenrole != "user" {
 		response.Message = "Anda tidak memiliki akses"
+		return ReturnStruct(response)
+	}
+
+	// Check if the komentar ID parameter is provided
+	if datakomentar.ID == "" {
+		response.Message = "Parameter dari function ini adalah ID"
+		return ReturnStruct(response)
+	}
+
+	// Check if the komentar ID exists
+	if idKomentarExists(mongoenv, dbname, datakomentar) {
+		response.Message = "ID telah ada"
+		return ReturnStruct(response)
+	}
+
+	// Check if the berita ID parameter is provided
+	if datakomentar.ID_berita == "" {
+		response.Message = "Parameter dari function ini adalah ID Berita"
 		return ReturnStruct(response)
 	}
 
@@ -797,12 +816,6 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	// Check if the berita exists
 	if !idBeritaExists(mongoenv, dbname, databerita) {
 		response.Message = "Berita tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check if the komentar ID exists
-	if idKomentarExists(mongoenv, dbname, datakomentar) {
-		response.Message = "ID telah ada"
 		return ReturnStruct(response)
 	}
 
@@ -861,8 +874,14 @@ func AmbilSatuKomentar(publickey, mongoenv, dbname, collname string, r *http.Req
 	}
 
 	// Check user role
-	if !(tokenrole == "admin" || tokenrole == "author" || tokenrole == "user") {
+	if tokenrole != "admin" && tokenrole != "author" && tokenrole != "user" {
 		response.Message = "Anda tidak memiliki akses"
+		return ReturnStruct(response)
+	}
+
+	// Check if the komentar ID parameter is provided
+	if datakomentar.ID == "" {
+		response.Message = "Parameter dari function ini adalah ID"
 		return ReturnStruct(response)
 	}
 
@@ -911,7 +930,7 @@ func AmbilSemuaKomentar(publickey, mongoenv, dbname, collname string, r *http.Re
 	}
 
 	// Check user role
-	if !(tokenrole == "admin" || tokenrole == "author" || tokenrole == "user") {
+	if tokenrole != "admin" && tokenrole != "author" && tokenrole != "user" {
 		response.Message = "Anda tidak memiliki akses"
 		return ReturnStruct(response)
 	}
@@ -969,9 +988,24 @@ func UpdateKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 		return ReturnStruct(response)
 	}
 
+	// Temukan informasi komentator dari database
+	namakomentator := FindKomentar(mconn, collname, datakomentar)
+
+	// Validasi apakah user memiliki akses (admin atau pemilik komentar)
+	if tokenrole != "admin" || tokenname != namakomentator.Name {
+		response.Message = "Anda tidak memiliki akses"
+		return ReturnStruct(response)
+	}
+
 	// Validasi parameter yang diperlukan
 	if datakomentar.ID == "" || datakomentar.Name == "" {
 		response.Message = "Parameter dari function ini adalah id dan name"
+		return ReturnStruct(response)
+	}
+
+	// Validasi keberadaan komentar di database
+	if !idKomentarExists(mongoenv, dbname, datakomentar) {
+		response.Message = "Komentar tidak ditemukan"
 		return ReturnStruct(response)
 	}
 
@@ -982,21 +1016,6 @@ func UpdateKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	// Validasi keberadaan berita di database
 	if !idBeritaExists(mongoenv, dbname, databerita) {
 		response.Message = "Berita tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Temukan informasi komentator dari database
-	namakomentator := FindKomentar(mconn, collname, datakomentar)
-
-	// Validasi apakah user memiliki akses (admin atau pemilik komentar)
-	if !(tokenrole == "admin" || tokenname == namakomentator.Name) {
-		response.Message = "Anda tidak memiliki akses"
-		return ReturnStruct(response)
-	}
-
-	// Validasi keberadaan komentar di database
-	if !idKomentarExists(mongoenv, dbname, datakomentar) {
-		response.Message = "Komentar tidak ditemukan"
 		return ReturnStruct(response)
 	}
 
@@ -1057,18 +1076,18 @@ func HapusKomentar(publickey, mongoenv, dbname, collname string, r *http.Request
 		return ReturnStruct(response)
 	}
 
-	// Check if ID is provided
-	if datakomentar.ID == "" {
-		response.Message = "Parameter dari function ini adalah id"
-		return ReturnStruct(response)
-	}
-
 	// Find namakomentator based on ID
 	namakomentator := FindKomentar(mconn, collname, datakomentar)
 
 	// Check user role for authorization
-	if !(tokenrole == "admin" || tokenname == namakomentator.Name) {
+	if tokenrole != "admin" || tokenname != namakomentator.Name {
 		response.Message = "Anda tidak memiliki akses"
+		return ReturnStruct(response)
+	}
+
+	// Check if ID is provided
+	if datakomentar.ID == "" {
+		response.Message = "Parameter dari function ini adalah id"
 		return ReturnStruct(response)
 	}
 
