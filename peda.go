@@ -126,15 +126,15 @@ func Login(token, privatekey, mongoenv, dbname, collname string, r *http.Request
 	var datauser User
 	err := json.NewDecoder(r.Body).Decode(&datauser)
 
-	// Check if the entered password is not valid
-	if !IsPasswordValid(mconn, collname, datauser) {
-		response.Message = "Password Salah"
-		return ReturnStruct(response)
-	}
-
 	// Check for JSON decoding errors
 	if err != nil {
 		response.Message = "Error parsing application/json: " + err.Error()
+		return ReturnStruct(response)
+	}
+
+	// Check if the entered password is not valid
+	if !IsPasswordValid(mconn, collname, datauser) {
+		response.Message = "Password Salah"
 		return ReturnStruct(response)
 	}
 
