@@ -16,9 +16,9 @@ type Payload struct {
 type User struct {
 	Name        string `json:"name,omitempty" bson:"name,omitempty"`
 	Email       string `json:"email,omitempty" bson:"email,omitempty"`
-	No_whatsapp string `json:"no_whatsapp" bson:"no_whatsapp"`
+	No_whatsapp string `json:"no_whatsapp,omitempty" bson:"no_whatsapp"`
 	Username    string `json:"username" bson:"username"`
-	Password    string `json:"password" bson:"password"`
+	Password    string `json:"password,omitempty" bson:"password"`
 	Role        string `json:"role,omitempty" bson:"role,omitempty"`
 }
 
@@ -26,7 +26,6 @@ type CredentialUser struct {
 	Status  bool   `json:"status" bson:"status"`
 	Data    User   `json:"data,omitempty" bson:"data,omitempty"`
 	Message string `json:"message,omitempty" bson:"message,omitempty"`
-	Token   string `json:"token,omitempty" bson:"token,omitempty"`
 }
 
 type Pesan struct {
