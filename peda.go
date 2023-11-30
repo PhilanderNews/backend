@@ -649,8 +649,6 @@ func AmbilSatuKomentar(publickey, mongoenv, dbname, collname string, r *http.Req
 	response.Status = false
 	mconn := SetConnection(mongoenv, dbname)
 	var datakomentar Komentar
-	var databerita Berita
-	databerita.ID = datakomentar.ID_berita
 	var auth User
 
 	err := json.NewDecoder(r.Body).Decode(&datakomentar)
@@ -673,15 +671,11 @@ func AmbilSatuKomentar(publickey, mongoenv, dbname, collname string, r *http.Req
 			} else {
 				if usernameExists(mongoenv, dbname, auth) {
 					if tokenrole == "admin" || tokenrole == "author" || tokenrole == "user" {
-						if idBeritaExists(mongoenv, dbname, databerita) {
-							if idKomentarExists(mongoenv, dbname, datakomentar) {
-								komentar := FindKomentar(mconn, collname, datakomentar)
-								return ReturnStruct(komentar)
-							} else {
-								response.Message = "komentar tidak ditemukan"
-							}
+						if idKomentarExists(mongoenv, dbname, datakomentar) {
+							komentar := FindKomentar(mconn, collname, datakomentar)
+							return ReturnStruct(komentar)
 						} else {
-							response.Message = "berita tidak ditemukan"
+							response.Message = "komentar tidak ditemukan"
 						}
 					} else {
 						response.Message = "anda tidak memiliki akses"
@@ -701,8 +695,6 @@ func HapusKomentar(publickey, mongoenv, dbname, collname string, r *http.Request
 	mconn := SetConnection(mongoenv, dbname)
 	var auth User
 	var datakomentar Komentar
-	var databerita Berita
-	databerita.ID = datakomentar.ID_berita
 
 	err := json.NewDecoder(r.Body).Decode(&datakomentar)
 
@@ -724,25 +716,21 @@ func HapusKomentar(publickey, mongoenv, dbname, collname string, r *http.Request
 				response.Message = "hasil decode tidak ditemukan"
 			} else {
 				if usernameExists(mongoenv, dbname, auth) {
-					if idBeritaExists(mongoenv, dbname, databerita) {
-						if datakomentar.ID == "" {
-							response.Message = "parameter dari function ini adalah id"
-						} else {
-							namakomentator := FindKomentar(mconn, collname, datakomentar)
-							if tokenrole == "admin" || tokenname == namakomentator.Name {
-								if idKomentarExists(mongoenv, dbname, datakomentar) {
-									DeleteKomentar(mconn, collname, datakomentar)
-									response.Status = true
-									response.Message = "berhasil hapus " + datakomentar.ID + " dari database"
-								} else {
-									response.Message = "komentar tidak ditemukan"
-								}
-							} else {
-								response.Message = "anda tidak memiliki akses"
-							}
-						}
+					if datakomentar.ID == "" {
+						response.Message = "parameter dari function ini adalah id"
 					} else {
-						response.Message = "berita tidak ditemukan"
+						namakomentator := FindKomentar(mconn, collname, datakomentar)
+						if tokenrole == "admin" || tokenname == namakomentator.Name {
+							if idKomentarExists(mongoenv, dbname, datakomentar) {
+								DeleteKomentar(mconn, collname, datakomentar)
+								response.Status = true
+								response.Message = "berhasil hapus " + datakomentar.ID + " dari database"
+							} else {
+								response.Message = "komentar tidak ditemukan"
+							}
+						} else {
+							response.Message = "anda tidak memiliki akses"
+						}
 					}
 				} else {
 					response.Message = "akun tidak ditemukan"
@@ -760,7 +748,6 @@ func UpdateKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	var auth User
 	var datakomentar Komentar
 	var databerita Berita
-	databerita.ID = datakomentar.ID_berita
 
 	err := json.NewDecoder(r.Body).Decode(&datakomentar)
 
@@ -785,6 +772,7 @@ func UpdateKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 					if datakomentar.ID == "" || datakomentar.Name == "" {
 						response.Message = "parameter dari function ini adalah id"
 					} else {
+						databerita.ID = datakomentar.ID_berita
 						if idBeritaExists(mongoenv, dbname, databerita) {
 							namakomentator := FindKomentar(mconn, collname, datakomentar)
 							if tokenrole == "admin" || tokenname == namakomentator.Name {
