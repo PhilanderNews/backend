@@ -132,6 +132,12 @@ func Login(token, privatekey, mongoenv, dbname, collname string, r *http.Request
 		return ReturnStruct(response)
 	}
 
+	// Check if the user account exists
+	if !usernameExists(mongoenv, dbname, datauser) {
+		response.Message = "Akun tidak ditemukan"
+		return ReturnStruct(response)
+	}
+
 	// Check if the entered password is not valid
 	if !IsPasswordValid(mconn, collname, datauser) {
 		response.Message = "Password Salah"
