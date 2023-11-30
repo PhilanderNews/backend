@@ -549,7 +549,6 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	mconn := SetConnection(mongoenv, dbname)
 	var datakomentar Komentar
 	var databerita Berita
-	databerita.ID = datakomentar.ID_berita
 
 	err := json.NewDecoder(r.Body).Decode(&datakomentar)
 
@@ -573,6 +572,7 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 			} else {
 				if usernameExists(mongoenv, dbname, auth) {
 					if tokenrole == "admin" || tokenrole == "author" || tokenrole == "user" {
+						databerita.ID = datakomentar.ID_berita
 						if idBeritaExists(mongoenv, dbname, databerita) {
 							if idKomentarExists(mongoenv, dbname, datakomentar) {
 								response.Message = "ID telah ada"
