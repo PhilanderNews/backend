@@ -166,47 +166,6 @@ func Login(token, privatekey, mongoenv, dbname, collname string, r *http.Request
 	return ReturnStruct(response)
 }
 
-func AmbilSemuaUser(publickey, mongoenv, dbname, collname string, r *http.Request) string {
-	var response Pesan
-	response.Status = false
-
-	// Establish MongoDB connection
-	mconn := SetConnection(mongoenv, dbname)
-
-	// Get token and perform basic token validation
-	header := r.Header.Get("token")
-	if header == "" {
-		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Decode token to get username and role
-	tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
-	tokenrole := DecodeGetRole(os.Getenv(publickey), header)
-
-	// Check if decoding was successful
-	if tokenusername == "" || tokenrole == "" {
-		response.Message = "Hasil decode tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check if the user account exists
-	if !usernameExists(mongoenv, dbname, User{Username: tokenusername}) {
-		response.Message = "Akun tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check if the user has admin privileges
-	if tokenrole != "admin" {
-		response.Message = "Anda tidak memiliki akses"
-		return ReturnStruct(response)
-	}
-
-	// Get all users if the user is an admin
-	datauser := GetAllUser(mconn, collname)
-	return ReturnStruct(datauser)
-}
-
 func AmbilSatuUser(publickey, mongoenv, dbname, collname string, r *http.Request) string {
 	var response Pesan
 	response.Status = false
@@ -263,6 +222,47 @@ func AmbilSatuUser(publickey, mongoenv, dbname, collname string, r *http.Request
 		response.Message = "User tidak ditemukan"
 		return ReturnStruct(response)
 	}
+}
+
+func AmbilSemuaUser(publickey, mongoenv, dbname, collname string, r *http.Request) string {
+	var response Pesan
+	response.Status = false
+
+	// Establish MongoDB connection
+	mconn := SetConnection(mongoenv, dbname)
+
+	// Get token and perform basic token validation
+	header := r.Header.Get("token")
+	if header == "" {
+		response.Message = "Header login tidak ditemukan"
+		return ReturnStruct(response)
+	}
+
+	// Decode token to get username and role
+	tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+	tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+
+	// Check if decoding was successful
+	if tokenusername == "" || tokenrole == "" {
+		response.Message = "Hasil decode tidak ditemukan"
+		return ReturnStruct(response)
+	}
+
+	// Check if the user account exists
+	if !usernameExists(mongoenv, dbname, User{Username: tokenusername}) {
+		response.Message = "Akun tidak ditemukan"
+		return ReturnStruct(response)
+	}
+
+	// Check if the user has admin privileges
+	if tokenrole != "admin" {
+		response.Message = "Anda tidak memiliki akses"
+		return ReturnStruct(response)
+	}
+
+	// Get all users if the user is an admin
+	datauser := GetAllUser(mconn, collname)
+	return ReturnStruct(datauser)
 }
 
 func UpdateUser(publickey, mongoenv, dbname, collname string, r *http.Request) string {
@@ -477,50 +477,6 @@ func TambahBerita(publickey, mongoenv, dbname, collname string, r *http.Request)
 	return ReturnStruct(response)
 }
 
-func AmbilSemuaBerita(publickey, mongoenv, dbname, collname string, r *http.Request) string {
-	var response Pesan
-	response.Status = false
-
-	// Establish MongoDB connection
-	mconn := SetConnection(mongoenv, dbname)
-
-	// Get token and perform basic token validation
-	var auth User
-	header := r.Header.Get("token")
-	if header == "" {
-		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Decode token to get user details
-	tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
-	tokenrole := DecodeGetRole(os.Getenv(publickey), header)
-	auth.Username = tokenusername
-
-	// Check if decoding was successful
-	if tokenusername == "" || tokenrole == "" {
-		response.Message = "Hasil decode tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check if the user account exists
-	if !usernameExists(mongoenv, dbname, auth) {
-		response.Message = "Akun tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check if the user has admin, author, or user privileges
-	if tokenrole != "admin" && tokenrole != "author" && tokenrole != "user" {
-		response.Message = "Anda tidak memiliki akses"
-		return ReturnStruct(response)
-	}
-
-	// Fetch all berita data from the database
-	databerita := GetAllBerita(mconn, collname)
-
-	return ReturnStruct(databerita)
-}
-
 func AmbilSatuBerita(publickey, mongoenv, dbname, collname string, r *http.Request) string {
 	var response Pesan
 	response.Status = false
@@ -579,6 +535,50 @@ func AmbilSatuBerita(publickey, mongoenv, dbname, collname string, r *http.Reque
 	}
 
 	return ReturnStruct(response)
+}
+
+func AmbilSemuaBerita(publickey, mongoenv, dbname, collname string, r *http.Request) string {
+	var response Pesan
+	response.Status = false
+
+	// Establish MongoDB connection
+	mconn := SetConnection(mongoenv, dbname)
+
+	// Get token and perform basic token validation
+	var auth User
+	header := r.Header.Get("token")
+	if header == "" {
+		response.Message = "Header login tidak ditemukan"
+		return ReturnStruct(response)
+	}
+
+	// Decode token to get user details
+	tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+	tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+	auth.Username = tokenusername
+
+	// Check if decoding was successful
+	if tokenusername == "" || tokenrole == "" {
+		response.Message = "Hasil decode tidak ditemukan"
+		return ReturnStruct(response)
+	}
+
+	// Check if the user account exists
+	if !usernameExists(mongoenv, dbname, auth) {
+		response.Message = "Akun tidak ditemukan"
+		return ReturnStruct(response)
+	}
+
+	// Check if the user has admin, author, or user privileges
+	if tokenrole != "admin" && tokenrole != "author" && tokenrole != "user" {
+		response.Message = "Anda tidak memiliki akses"
+		return ReturnStruct(response)
+	}
+
+	// Fetch all berita data from the database
+	databerita := GetAllBerita(mconn, collname)
+
+	return ReturnStruct(databerita)
 }
 
 func UpdateBerita(publickey, mongoenv, dbname, collname string, r *http.Request) string {
@@ -803,50 +803,6 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	return ReturnStruct(response)
 }
 
-func AmbilSemuaKomentar(publickey, mongoenv, dbname, collname string, r *http.Request) string {
-	// Initialize response
-	var response Pesan
-	response.Status = false
-	var auth User
-
-	// Establish MongoDB connection
-	mconn := SetConnection(mongoenv, dbname)
-
-	// Get token and perform basic token validation
-	header := r.Header.Get("token")
-	if header == "" {
-		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Decode user information from the token
-	tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
-	tokenrole := DecodeGetRole(os.Getenv(publickey), header)
-
-	auth.Username = tokenusername
-
-	if tokenusername == "" || tokenrole == "" {
-		response.Message = "Hasil decode tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check if the user exists
-	if !usernameExists(mongoenv, dbname, auth) {
-		response.Message = "Akun tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check user role
-	if !(tokenrole == "admin" || tokenrole == "author" || tokenrole == "user") {
-		response.Message = "Anda tidak memiliki akses"
-		return ReturnStruct(response)
-	}
-
-	// Get all komentar data
-	datakomentar := GetAllKomentar(mconn, collname)
-	return ReturnStruct(datakomentar)
-}
-
 func AmbilSatuKomentar(publickey, mongoenv, dbname, collname string, r *http.Request) string {
 	// Initialize response
 	var response Pesan
@@ -907,6 +863,50 @@ func AmbilSatuKomentar(publickey, mongoenv, dbname, collname string, r *http.Req
 	// Find and return the komentar
 	komentar := FindKomentar(mconn, collname, datakomentar)
 	return ReturnStruct(komentar)
+}
+
+func AmbilSemuaKomentar(publickey, mongoenv, dbname, collname string, r *http.Request) string {
+	// Initialize response
+	var response Pesan
+	response.Status = false
+	var auth User
+
+	// Establish MongoDB connection
+	mconn := SetConnection(mongoenv, dbname)
+
+	// Get token and perform basic token validation
+	header := r.Header.Get("token")
+	if header == "" {
+		response.Message = "Header login tidak ditemukan"
+		return ReturnStruct(response)
+	}
+
+	// Decode user information from the token
+	tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
+	tokenrole := DecodeGetRole(os.Getenv(publickey), header)
+
+	auth.Username = tokenusername
+
+	if tokenusername == "" || tokenrole == "" {
+		response.Message = "Hasil decode tidak ditemukan"
+		return ReturnStruct(response)
+	}
+
+	// Check if the user exists
+	if !usernameExists(mongoenv, dbname, auth) {
+		response.Message = "Akun tidak ditemukan"
+		return ReturnStruct(response)
+	}
+
+	// Check user role
+	if !(tokenrole == "admin" || tokenrole == "author" || tokenrole == "user") {
+		response.Message = "Anda tidak memiliki akses"
+		return ReturnStruct(response)
+	}
+
+	// Get all komentar data
+	datakomentar := GetAllKomentar(mconn, collname)
+	return ReturnStruct(datakomentar)
 }
 
 func UpdateKomentar(publickey, mongoenv, dbname, collname string, r *http.Request) string {
