@@ -33,8 +33,8 @@ func Authorization(publickey, mongoenv, dbname, collname string, r *http.Request
 			if usernameExists(mongoenv, dbname, auth) {
 				response.Message = "berhasil decode token"
 				response.Status = true
-				response.Data.Username = tokenname
-				response.Data.Name = tokenusername
+				response.Data.Name = tokenname
+				response.Data.Username = tokenusername
 				response.Data.Role = tokenrole
 			} else {
 				response.Message = "akun tidak ditemukan"
