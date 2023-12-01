@@ -165,7 +165,7 @@ func idKomentarExists(mongoenv, dbname string, datakomentar Komentar) bool {
 // Update
 
 func EditKomentar(mongoenv *mongo.Database, collname string, datakomentar Komentar) interface{} {
-	filter := bson.M{"id": datakomentar.ID, "id_berita": datakomentar.ID_berita}
+	filter := bson.M{"id": datakomentar.ID}
 	return atdb.ReplaceOneDoc(mongoenv, collname, filter, datakomentar)
 }
 
