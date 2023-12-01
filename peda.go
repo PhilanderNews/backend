@@ -992,14 +992,14 @@ func UpdateKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	namakomentator := FindKomentar(mconn, collname, datakomentar)
 
 	// Validasi apakah user memiliki akses (admin atau pemilik komentar)
-	if tokenrole != "admin" || tokenname != namakomentator.Name {
+	if tokenname != namakomentator.Name {
 		response.Message = "Anda tidak memiliki akses"
 		return ReturnStruct(response)
 	}
 
 	// Validasi parameter yang diperlukan
-	if datakomentar.ID == "" || datakomentar.Name == "" {
-		response.Message = "Parameter dari function ini adalah id dan name"
+	if datakomentar.ID == "" {
+		response.Message = "Parameter dari function ini adalah id"
 		return ReturnStruct(response)
 	}
 
@@ -1009,13 +1009,9 @@ func UpdateKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 		return ReturnStruct(response)
 	}
 
-	// Set ID berita pada struktur Komentar
-	var databerita Berita
-	databerita.ID = datakomentar.ID_berita
-
-	// Validasi keberadaan berita di database
-	if !idBeritaExists(mongoenv, dbname, databerita) {
-		response.Message = "Berita tidak ditemukan"
+	// Validasi apakah id_berita interface sama dengan id_berita original
+	if datakomentar.ID_berita != namakomentator.ID_berita {
+		response.Message = "Anda tidak bisa merubah id berita"
 		return ReturnStruct(response)
 	}
 
