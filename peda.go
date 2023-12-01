@@ -641,7 +641,7 @@ func UpdateBerita(publickey, mongoenv, dbname, collname string, r *http.Request)
 	namapenulis := FindBerita(mconn, collname, databerita)
 
 	// Check if the user is not an admin or not the author of the berita
-	if tokenrole != "admin" || tokenname != namapenulis.Penulis {
+	if !(tokenrole == "admin" || tokenname == namapenulis.Penulis) {
 		response.Message = "Anda tidak memiliki akses"
 		return ReturnStruct(response)
 	}
@@ -713,7 +713,7 @@ func HapusBerita(publickey, mongoenv, dbname, collname string, r *http.Request) 
 	namapenulis := FindBerita(mconn, collname, databerita)
 
 	// Check if the user has admin or author privileges
-	if tokenrole != "admin" || tokenname != namapenulis.Penulis {
+	if !(tokenrole == "admin" || tokenname == namapenulis.Penulis) {
 		response.Message = "Anda tidak memiliki akses"
 		return ReturnStruct(response)
 	}
