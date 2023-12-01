@@ -1070,7 +1070,7 @@ func HapusKomentar(publickey, mongoenv, dbname, collname string, r *http.Request
 	namakomentator := FindKomentar(mconn, collname, datakomentar)
 
 	// Check user role for authorization
-	if tokenrole != "admin" || tokenname != namakomentator.Name {
+	if !(tokenrole == "admin" || tokenname == namakomentator.Name) {
 		response.Message = "Anda tidak memiliki akses"
 		return ReturnStruct(response)
 	}
