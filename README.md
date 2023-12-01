@@ -7,3 +7,11 @@ Kelas	= 3C <br />
 Nama	= Fitrah Ali Akbar Setiawan <br />
 NPM		= 1214085 <br />
 Kelas	= 3C <br />
+
+# Dokumentasi Postman
+
+https://www.postman.com/befous/workspace/project3ulbi
+
+# Dokumentasi swagger
+
+https://philandernews.my.id/swagger/
