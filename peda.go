@@ -1003,18 +1003,13 @@ func UpdateKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 		return ReturnStruct(response)
 	}
 
-	// Validasi apakah id_berita interface sama dengan id_berita original
-	if datakomentar.ID_berita != namakomentator.ID_berita {
-		response.Message = "Anda tidak bisa merubah id berita"
-		return ReturnStruct(response)
-	}
-
 	// Lakukan edit pada komentar
+	datakomentar.Name = tokenname
+	datakomentar.ID_berita = namakomentator.ID_berita
 	EditKomentar(mconn, collname, datakomentar)
 
 	// Set status respons menjadi true dan tambahkan informasi pada pesan
 	response.Status = true
-	datakomentar.Name = tokenname
 	response.Message = "Berhasil update " + datakomentar.ID + " dari database"
 
 	return ReturnStruct(response)
