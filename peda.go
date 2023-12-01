@@ -690,12 +690,6 @@ func HapusBerita(publickey, mongoenv, dbname, collname string, r *http.Request) 
 		return ReturnStruct(response)
 	}
 
-	// Check for JSON decoding errors
-	if err != nil {
-		response.Message = "Error parsing application/json: " + err.Error()
-		return ReturnStruct(response)
-	}
-
 	// Decode token to get user details
 	tokenname := DecodeGetName(os.Getenv(publickey), header)
 	tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
@@ -719,7 +713,7 @@ func HapusBerita(publickey, mongoenv, dbname, collname string, r *http.Request) 
 	namapenulis := FindBerita(mconn, collname, databerita)
 
 	// Check if the user has admin or author privileges
-	if tokenrole != "admin" || tokenname != namapenulis.Penulis {
+	if tokenrole != "admin" && tokenname != namapenulis.Penulis {
 		response.Message = "Anda tidak memiliki akses"
 		return ReturnStruct(response)
 	}
