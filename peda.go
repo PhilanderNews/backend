@@ -982,15 +982,6 @@ func UpdateKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 		return ReturnStruct(response)
 	}
 
-	// Temukan informasi komentator dari database
-	namakomentator := FindKomentar(mconn, collname, datakomentar)
-
-	// Validasi apakah user memiliki akses (admin atau pemilik komentar)
-	if tokenname != namakomentator.Name {
-		response.Message = "Anda tidak memiliki akses"
-		return ReturnStruct(response)
-	}
-
 	// Validasi parameter yang diperlukan
 	if datakomentar.ID == "" {
 		response.Message = "Parameter dari function ini adalah id"
@@ -1000,6 +991,15 @@ func UpdateKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	// Validasi keberadaan komentar di database
 	if !idKomentarExists(mongoenv, dbname, datakomentar) {
 		response.Message = "Komentar tidak ditemukan"
+		return ReturnStruct(response)
+	}
+
+	// Temukan informasi komentator dari database
+	namakomentator := FindKomentar(mconn, collname, datakomentar)
+
+	// Validasi apakah user memiliki akses (admin atau pemilik komentar)
+	if tokenname != namakomentator.Name {
+		response.Message = "Anda tidak memiliki akses"
 		return ReturnStruct(response)
 	}
 
