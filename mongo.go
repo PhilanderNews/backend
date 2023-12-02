@@ -175,3 +175,29 @@ func DeleteKomentar(mongoenv *mongo.Database, collname string, datakomentar Kome
 	filter := bson.M{"id": datakomentar.ID}
 	return atdb.DeleteOneDoc(mongoenv, collname, filter)
 }
+
+// ---------------------------------------------------------------------- Tutorial
+
+func InsertMongo(mongoenv *mongo.Database, collname string, pesan Tutorial) (InsertedID interface{}) {
+	return atdb.InsertOneDoc(mongoenv, collname, pesan)
+}
+
+func GetAllMongo(mongoenv *mongo.Database, collname string) []Tutorial {
+	data := atdb.GetAllDoc[[]Tutorial](mongoenv, collname)
+	return data
+}
+
+func GetOneMongo(mongoenv *mongo.Database, collname string, datapesan Tutorial) Tutorial {
+	filter := bson.M{"parameter": datapesan.Parameter}
+	return atdb.GetOneDoc[Tutorial](mongoenv, collname, filter)
+}
+
+func UpdateMongo(mongoenv *mongo.Database, collname string, datapesan Tutorial) interface{} {
+	filter := bson.M{"parameter": datapesan.Parameter}
+	return atdb.ReplaceOneDoc(mongoenv, collname, filter, datapesan)
+}
+
+func DeleteMongo(mongoenv *mongo.Database, collname string, datapesan Tutorial) interface{} {
+	filter := bson.M{"parameter": datapesan.Parameter}
+	return atdb.DeleteOneDoc(mongoenv, collname, filter)
+}

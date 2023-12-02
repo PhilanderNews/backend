@@ -64,3 +64,10 @@ type Komentar struct {
 	Tanggal   string `json:"tanggal" bson:"tanggal"`
 	Komentar  string `json:"komentar" bson:"komentar"`
 }
+
+// ---------------------------------------------------------------------- Tutorial
+
+type Tutorial struct {
+	Parameter string `json:"parameter" bson:"parameter"`
+	Pesan     string `json:"pesan" bson:"pesan"`
+}

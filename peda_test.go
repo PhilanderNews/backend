@@ -49,3 +49,39 @@ func TestUsernameExists(t *testing.T) {
 	hasil := !usernameExists(mongoenv, dbname, userdata)
 	fmt.Println(hasil)
 }
+
+// ---------------------------------------------------------------------- Tutorial
+
+func TestInsertMongo(t *testing.T) {
+	mconn := SetConnectionTest(mongoenv, dbname)
+	testPesan := Tutorial{Parameter: "2", Pesan: "Apa yah"}
+	testinsert := InsertMongo(mconn, "test", testPesan)
+	fmt.Println(testinsert)
+}
+
+func TestGetAllMongo(t *testing.T) {
+	mconn := SetConnectionTest(mongoenv, dbname)
+	testinsert := GetAllMongo(mconn, "test")
+	fmt.Println(testinsert)
+}
+
+func TestGetOneMongo(t *testing.T) {
+	mconn := SetConnectionTest(mongoenv, dbname)
+	testPesan := Tutorial{Parameter: "2"}
+	testinsert := GetOneMongo(mconn, "test", testPesan)
+	fmt.Println(testinsert)
+}
+
+func TestUpdateMongo(t *testing.T) {
+	mconn := SetConnectionTest(mongoenv, dbname)
+	testPesan := Tutorial{Parameter: "1", Pesan: "Berhasil Update"}
+	testinsert := UpdateMongo(mconn, "test", testPesan)
+	fmt.Println(testinsert)
+}
+
+func TestDeleteMongo(t *testing.T) {
+	mconn := SetConnectionTest(mongoenv, dbname)
+	testPesan := Tutorial{Parameter: "1"}
+	testinsert := DeleteMongo(mconn, "test", testPesan)
+	fmt.Println(testinsert)
+}

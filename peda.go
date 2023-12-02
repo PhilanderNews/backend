@@ -1091,3 +1091,12 @@ func HapusKomentar(publickey, mongoenv, dbname, collname string, r *http.Request
 
 	return ReturnStruct(response)
 }
+
+// ---------------------------------------------------------------------- Tutorial
+
+func TutorialGCFInsertMongo(mongoenv, dbname, collname string, r *http.Request) string {
+	mconn := SetConnection(mongoenv, dbname)
+	var datatutorial Tutorial
+	InsertMongo(mconn, collname, datatutorial)
+	return ReturnStruct(datatutorial)
+}
