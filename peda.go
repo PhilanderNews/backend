@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/aiteung/atapi"
 	"github.com/aiteung/atmessage"
@@ -339,10 +340,14 @@ func UpdateUser(publickey, mongoenv, dbname, collname string, r *http.Request) s
 			return ReturnStruct(response)
 		}
 		datauser.Password = hash
+	} else {
+		// Retrieve user details
+		user := FindUser(mconn, collname, datauser)
+		datauser.Password = user.Password
 	}
 
 	// Perform user update
-	EditUser(mconn, collname, datauser.Name, datauser.Email, datauser.No_whatsapp, datauser.Username, datauser.Password, datauser.Role)
+	EditUser(mconn, collname, datauser)
 
 	response.Status = true
 	response.Message = "Berhasil update " + datauser.Username + " dari database"
@@ -430,6 +435,17 @@ func TambahBerita(publickey, mongoenv, dbname, collname string, r *http.Request)
 	var databerita Berita
 	err := json.NewDecoder(r.Body).Decode(&databerita)
 
+	//Define waktu
+	wib, timeErr := time.LoadLocation("Asia/Jakarta")
+
+	if timeErr != nil {
+		response.Message = "Error parsing time location: " + err.Error()
+		return ReturnStruct(response)
+	}
+
+	currentTime := time.Now().In(wib)
+	timeStringBerita := currentTime.Format("Monday, 2 January 2006 15:04 MST")
+
 	// Check for JSON decoding errors
 	if err != nil {
 		response.Message = "Error parsing application/json: " + err.Error()
@@ -477,6 +493,7 @@ func TambahBerita(publickey, mongoenv, dbname, collname string, r *http.Request)
 	// Insert berita data into the database
 	response.Status = true
 	databerita.Penulis = tokenname
+	databerita.Waktu = timeStringBerita
 	InsertBerita(mconn, collname, databerita)
 	response.Message = "Berhasil input data"
 
@@ -497,37 +514,6 @@ func AmbilSatuBerita(publickey, mongoenv, dbname, collname string, r *http.Reque
 	// Check for JSON decoding errors
 	if err != nil {
 		response.Message = "Error parsing application/json: " + err.Error()
-		return ReturnStruct(response)
-	}
-
-	// Get token and perform basic token validation
-	var auth User
-	header := r.Header.Get("token")
-	if header == "" {
-		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Decode token to get user details
-	tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
-	tokenrole := DecodeGetRole(os.Getenv(publickey), header)
-	auth.Username = tokenusername
-
-	// Check if decoding was successful
-	if tokenusername == "" || tokenrole == "" {
-		response.Message = "Hasil decode tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check if the user account exists
-	if !usernameExists(mongoenv, dbname, auth) {
-		response.Message = "Akun tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check if the user has admin, author, or user privileges
-	if tokenrole != "admin" && tokenrole != "author" && tokenrole != "user" {
-		response.Message = "Anda tidak memiliki akses"
 		return ReturnStruct(response)
 	}
 
@@ -555,37 +541,6 @@ func AmbilSemuaBerita(publickey, mongoenv, dbname, collname string, r *http.Requ
 
 	// Establish MongoDB connection
 	mconn := SetConnection(mongoenv, dbname)
-
-	// Get token and perform basic token validation
-	var auth User
-	header := r.Header.Get("token")
-	if header == "" {
-		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Decode token to get user details
-	tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
-	tokenrole := DecodeGetRole(os.Getenv(publickey), header)
-	auth.Username = tokenusername
-
-	// Check if decoding was successful
-	if tokenusername == "" || tokenrole == "" {
-		response.Message = "Hasil decode tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check if the user account exists
-	if !usernameExists(mongoenv, dbname, auth) {
-		response.Message = "Akun tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check if the user has admin, author, or user privileges
-	if tokenrole != "admin" && tokenrole != "author" && tokenrole != "user" {
-		response.Message = "Anda tidak memiliki akses"
-		return ReturnStruct(response)
-	}
 
 	// Fetch all berita data from the database
 	databerita := GetAllBerita(mconn, collname)
@@ -655,6 +610,7 @@ func UpdateBerita(publickey, mongoenv, dbname, collname string, r *http.Request)
 	// Check if the berita exists
 	if idBeritaExists(mongoenv, dbname, databerita) {
 		databerita.Penulis = tokenname
+		databerita.Waktu = namapenulis.Waktu
 		EditBerita(mconn, collname, databerita)
 		response.Status = true
 		response.Message = "Berhasil update " + databerita.ID + " dari database"
@@ -749,6 +705,10 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	var auth User
 	err := json.NewDecoder(r.Body).Decode(&datakomentar)
 
+	// Define time
+	currentTime := time.Now()
+	timeStringKomentar := currentTime.Format("January 2, 2006")
+
 	// Check for JSON decoding errors
 	if err != nil {
 		response.Message = "Error parsing application/json: " + err.Error()
@@ -816,6 +776,7 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	// Insert the komentar data
 	response.Status = true
 	datakomentar.Name = tokenname
+	datakomentar.Tanggal = timeStringKomentar
 	InsertKomentar(mconn, collname, datakomentar)
 	response.Message = "Berhasil Input data"
 
@@ -832,7 +793,6 @@ func AmbilSatuKomentar(publickey, mongoenv, dbname, collname string, r *http.Req
 
 	// Initialize datakomentar and auth
 	var datakomentar Komentar
-	var auth User
 
 	// Decode JSON request body into datakomentar
 	err := json.NewDecoder(r.Body).Decode(&datakomentar)
@@ -840,36 +800,6 @@ func AmbilSatuKomentar(publickey, mongoenv, dbname, collname string, r *http.Req
 	// Check for JSON decoding errors
 	if err != nil {
 		response.Message = "Error parsing application/json: " + err.Error()
-		return ReturnStruct(response)
-	}
-
-	// Get token from request header
-	header := r.Header.Get("token")
-	if header == "" {
-		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Decode user information from the token
-	tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
-	tokenrole := DecodeGetRole(os.Getenv(publickey), header)
-
-	auth.Username = tokenusername
-
-	if tokenusername == "" || tokenrole == "" {
-		response.Message = "Hasil decode tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check if the user exists
-	if !usernameExists(mongoenv, dbname, auth) {
-		response.Message = "Akun tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check user role
-	if tokenrole != "admin" && tokenrole != "author" && tokenrole != "user" {
-		response.Message = "Anda tidak memiliki akses"
 		return ReturnStruct(response)
 	}
 
@@ -894,40 +824,9 @@ func AmbilSemuaKomentar(publickey, mongoenv, dbname, collname string, r *http.Re
 	// Initialize response
 	var response Pesan
 	response.Status = false
-	var auth User
 
 	// Establish MongoDB connection
 	mconn := SetConnection(mongoenv, dbname)
-
-	// Get token and perform basic token validation
-	header := r.Header.Get("token")
-	if header == "" {
-		response.Message = "Header login tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Decode user information from the token
-	tokenusername := DecodeGetUsername(os.Getenv(publickey), header)
-	tokenrole := DecodeGetRole(os.Getenv(publickey), header)
-
-	auth.Username = tokenusername
-
-	if tokenusername == "" || tokenrole == "" {
-		response.Message = "Hasil decode tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check if the user exists
-	if !usernameExists(mongoenv, dbname, auth) {
-		response.Message = "Akun tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check user role
-	if tokenrole != "admin" && tokenrole != "author" && tokenrole != "user" {
-		response.Message = "Anda tidak memiliki akses"
-		return ReturnStruct(response)
-	}
 
 	// Get all komentar data
 	datakomentar := GetAllKomentar(mconn, collname)
@@ -1006,6 +905,7 @@ func UpdateKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	// Lakukan edit pada komentar
 	datakomentar.Name = tokenname
 	datakomentar.ID_berita = namakomentator.ID_berita
+	datakomentar.Tanggal = namakomentator.Tanggal
 	EditKomentar(mconn, collname, datakomentar)
 
 	// Set status respons menjadi true dan tambahkan informasi pada pesan
