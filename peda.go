@@ -995,8 +995,9 @@ func HapusKomentar(publickey, mongoenv, dbname, collname string, r *http.Request
 // ---------------------------------------------------------------------- Tutorial
 
 func TutorialGCFInsertMongo(mongoenv, dbname, collname string, r *http.Request) string {
+	var pesan Pesan
 	mconn := SetConnection(mongoenv, dbname)
-	var datatutorial Tutorial
-	InsertMongo(mconn, collname, datatutorial)
-	return ReturnStruct(datatutorial)
+	InsertMongo(mconn, collname, Tutorial{})
+	pesan.Message = "berhasil"
+	return ReturnStruct(pesan)
 }
