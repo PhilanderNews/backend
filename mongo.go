@@ -170,7 +170,7 @@ func DeleteKomentar(mongoenv *mongo.Database, collname string, datakomentar Kome
 
 // ---------------------------------------------------------------------- Tutorial
 
-func InsertMongo(mongoenv *mongo.Database, collname string, pesan Tutorial) (InsertedID interface{}) {
+func InsertMongo(mongoenv *mongo.Database, collname string, pesan Tutorial) interface{} {
 	return atdb.InsertOneDoc(mongoenv, collname, pesan)
 }
 
