@@ -42,6 +42,8 @@ type Berita struct {
 	Konten   Paragraf `json:"konten" bson:"konten"`
 	Penulis  string   `json:"penulis" bson:"penulis"`
 	Sumber   string   `json:"sumber" bson:"sumber"`
+	Image    string   `json:"image" bson:"image"`
+	Waktu    string   `json:"waktu" bson:"waktu"`
 }
 
 type Paragraf struct {
