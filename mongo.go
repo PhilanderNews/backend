@@ -70,17 +70,9 @@ func usernameExists(mongoenv, dbname string, userdata User) bool {
 
 // Update
 
-func EditUser(mongoenv *mongo.Database, collname, name, email, no_whatsapp, username, password, role string) interface{} {
-
-	req := new(User)
-	req.Name = name
-	req.Email = email
-	req.No_whatsapp = no_whatsapp
-	req.Username = username
-	req.Password = password
-	req.Role = role
-	filter := bson.M{"username": username}
-	return atdb.ReplaceOneDoc(mongoenv, collname, filter, req)
+func EditUser(mongoenv *mongo.Database, collname string, datauser User) interface{} {
+	filter := bson.M{"username": datauser.Username}
+	return atdb.ReplaceOneDoc(mongoenv, collname, filter, datauser)
 }
 
 // Delete
