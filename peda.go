@@ -500,7 +500,7 @@ func TambahBerita(publickey, mongoenv, dbname, collname string, r *http.Request)
 	return ReturnStruct(response)
 }
 
-func AmbilSatuBerita(publickey, mongoenv, dbname, collname string, r *http.Request) string {
+func AmbilSatuBerita(mongoenv, dbname, collname string, r *http.Request) string {
 	var response Pesan
 	response.Status = false
 
@@ -535,7 +535,7 @@ func AmbilSatuBerita(publickey, mongoenv, dbname, collname string, r *http.Reque
 	return ReturnStruct(response)
 }
 
-func AmbilSemuaBerita(publickey, mongoenv, dbname, collname string, r *http.Request) string {
+func AmbilSemuaBerita(mongoenv, dbname, collname string, r *http.Request) string {
 	var response Pesan
 	response.Status = false
 
@@ -783,7 +783,7 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	return ReturnStruct(response)
 }
 
-func AmbilSatuKomentar(publickey, mongoenv, dbname, collname string, r *http.Request) string {
+func AmbilSatuKomentar(mongoenv, dbname, collname string, r *http.Request) string {
 	// Initialize response
 	var response Pesan
 	response.Status = false
@@ -820,7 +820,7 @@ func AmbilSatuKomentar(publickey, mongoenv, dbname, collname string, r *http.Req
 	return ReturnStruct(komentar)
 }
 
-func AmbilSemuaKomentar(publickey, mongoenv, dbname, collname string, r *http.Request) string {
+func AmbilSemuaKomentar(mongoenv, dbname, collname string, r *http.Request) string {
 	// Initialize response
 	var response Pesan
 	response.Status = false
@@ -997,7 +997,15 @@ func HapusKomentar(publickey, mongoenv, dbname, collname string, r *http.Request
 func TutorialGCFInsertMongo(mongoenv, dbname, collname string, r *http.Request) string {
 	var pesan Pesan
 	mconn := SetConnection(mongoenv, dbname)
-	InsertMongo(mconn, collname, Tutorial{})
-	pesan.Message = "berhasil"
-	return ReturnStruct(pesan)
+	var datatest Tutorial
+
+	err := json.NewDecoder(r.Body).Decode(&datatest)
+
+	// Check for JSON decoding errors
+	if err != nil {
+		pesan.Message = "Error parsing application/json: " + err.Error()
+		return ReturnStruct(pesan)
+	}
+	InsertMongo(mconn, collname, datatest)
+	return ReturnStruct(datatest)
 }
