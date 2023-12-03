@@ -3,6 +3,7 @@ package peda
 import (
 	"fmt"
 	"testing"
+	"time"
 )
 
 var privatekey = "34853f421ac024ef0e9ea957600a4eefb725af2e5ddda3cdd0c2d688ba35d245f963664dfce8aea29a5c9178b4ca3b3aac47d02f2d4093b8ea9675f001f7bb98"
@@ -84,4 +85,19 @@ func TestDeleteMongo(t *testing.T) {
 	testPesan := Tutorial{Parameter: "1"}
 	testinsert := DeleteMongo(mconn, "test", testPesan)
 	fmt.Println(testinsert)
+}
+
+func TestTanggal(t *testing.T) {
+	wib, err := time.LoadLocation("Asia/Jakarta")
+
+	if err != nil {
+		fmt.Println("Error parsing time location: " + err.Error())
+	}
+
+	currentTime := time.Now().In(wib)
+	timeStringKomentar := currentTime.Format("January 2, 2006")
+	timeStringBerita := currentTime.Format("Monday, 2 January 2006 15:04 MST")
+
+	fmt.Println(timeStringKomentar)
+	fmt.Println(timeStringBerita)
 }
