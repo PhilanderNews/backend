@@ -718,6 +718,7 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	// Get token and perform basic token validation
 	header := r.Header.Get("token")
 	if header == "" {
+		response.Status = true
 		response.Message = "Berhasil Input data tanpa login"
 		datakomentar.Name = "Anonymouse"
 		datakomentar.Tanggal = timeStringKomentar
