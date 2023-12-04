@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-var privatekey = "34853f421ac024ef0e9ea957600a4eefb725af2e5ddda3cdd0c2d688ba35d245f963664dfce8aea29a5c9178b4ca3b3aac47d02f2d4093b8ea9675f001f7bb98"
-var publickey = "f963664dfce8aea29a5c9178b4ca3b3aac47d02f2d4093b8ea9675f001f7bb98"
+var privatekey = "04c27ac63911f885e270848d41934e5848f6efa0c89665d5135aa4b11208e6a73e806beacb6c90b2005c1d24c7cb98d40964c245f5a082e36a85dbc1e1668503"
+var publickey = "3e806beacb6c90b2005c1d24c7cb98d40964c245f5a082e36a85dbc1e1668503"
 var encode = ""
 var mongoenv = ""
 var dbname = ""
@@ -20,9 +20,9 @@ func TestGeneratePaseto(t *testing.T) {
 }
 
 func TestEncode(t *testing.T) {
-	name := "Ibrohim Mubarok"
-	username := "asal"
-	role := "admin"
+	name := "Test Nama"
+	username := "Test Username"
+	role := "Test Role"
 
 	tokenstring, err := Encode(name, username, role, privatekey)
 	fmt.Println("error : ", err)
@@ -55,7 +55,7 @@ func TestUsernameExists(t *testing.T) {
 
 func TestInsertMongo(t *testing.T) {
 	mconn := SetConnectionTest(mongoenv, dbname)
-	testPesan := Tutorial{Parameter: "2", Pesan: "Apa yah"}
+	testPesan := Tutorial{Parameter: "2", Pesan: "testing 2"}
 	testinsert := InsertMongo(mconn, "test", testPesan)
 	fmt.Println(testinsert)
 }
@@ -68,7 +68,7 @@ func TestGetAllMongo(t *testing.T) {
 
 func TestGetOneMongo(t *testing.T) {
 	mconn := SetConnectionTest(mongoenv, dbname)
-	testPesan := Tutorial{Parameter: "2"}
+	testPesan := Tutorial{Parameter: "1"}
 	testinsert := GetOneMongo(mconn, "test", testPesan)
 	fmt.Println(testinsert)
 }
@@ -82,7 +82,7 @@ func TestUpdateMongo(t *testing.T) {
 
 func TestDeleteMongo(t *testing.T) {
 	mconn := SetConnectionTest(mongoenv, dbname)
-	testPesan := Tutorial{Parameter: "1"}
+	testPesan := Tutorial{Parameter: "2"}
 	testinsert := DeleteMongo(mconn, "test", testPesan)
 	fmt.Println(testinsert)
 }
