@@ -718,7 +718,10 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	// Get token and perform basic token validation
 	header := r.Header.Get("token")
 	if header == "" {
-		response.Message = "Header login tidak ditemukan"
+		response.Message = "Berhasil Input data tanpa login"
+		datakomentar.Name = "Anonymouse"
+		datakomentar.Tanggal = timeStringKomentar
+		InsertKomentar(mconn, collname, datakomentar)
 		return ReturnStruct(response)
 	}
 
@@ -737,12 +740,6 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	// Check if the user exists
 	if !usernameExists(mongoenv, dbname, auth) {
 		response.Message = "Akun tidak ditemukan"
-		return ReturnStruct(response)
-	}
-
-	// Check user role
-	if tokenrole != "admin" && tokenrole != "author" && tokenrole != "user" {
-		response.Message = "Anda tidak memiliki akses"
 		return ReturnStruct(response)
 	}
 
