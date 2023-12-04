@@ -720,7 +720,7 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	if header == "" {
 		response.Status = true
 		response.Message = "Berhasil Input data tanpa login"
-		datakomentar.Name = "Anonymouse"
+		datakomentar.Name = "Anonymous"
 		datakomentar.Tanggal = timeStringKomentar
 		InsertKomentar(mconn, collname, datakomentar)
 		return ReturnStruct(response)
