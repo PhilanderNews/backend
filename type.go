@@ -47,16 +47,16 @@ type Berita struct {
 }
 
 type Paragraf struct {
-	Paragraf1  string `json:"paragraf1,omitempty" bson:"paragraf1,omitempty"`
-	Paragraf2  string `json:"paragraf2,omitempty" bson:"paragraf2,omitempty"`
-	Paragraf3  string `json:"paragraf3,omitempty" bson:"paragraf3,omitempty"`
-	Paragraf4  string `json:"paragraf4,omitempty" bson:"paragraf4,omitempty"`
-	Paragraf5  string `json:"paragraf5,omitempty" bson:"paragraf5,omitempty"`
-	Paragraf6  string `json:"paragraf6,omitempty" bson:"paragraf6,omitempty"`
-	Paragraf7  string `json:"paragraf7,omitempty" bson:"paragraf7,omitempty"`
-	Paragraf8  string `json:"paragraf8,omitempty" bson:"paragraf8,omitempty"`
-	Paragraf9  string `json:"paragraf9,omitempty" bson:"paragraf9,omitempty"`
-	Paragraf10 string `json:"paragraf10,omitempty" bson:"paragraf10,omitempty"`
+	Paragraf1  string `json:"paragraf1" bson:"paragraf1"`
+	Paragraf2  string `json:"paragraf2" bson:"paragraf2"`
+	Paragraf3  string `json:"paragraf3" bson:"paragraf3"`
+	Paragraf4  string `json:"paragraf4" bson:"paragraf4"`
+	Paragraf5  string `json:"paragraf5" bson:"paragraf5"`
+	Paragraf6  string `json:"paragraf6" bson:"paragraf6"`
+	Paragraf7  string `json:"paragraf7" bson:"paragraf7"`
+	Paragraf8  string `json:"paragraf8" bson:"paragraf8"`
+	Paragraf9  string `json:"paragraf9" bson:"paragraf9"`
+	Paragraf10 string `json:"paragraf10" bson:"paragraf10"`
 }
 
 type Komentar struct {
