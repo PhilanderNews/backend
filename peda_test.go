@@ -8,7 +8,7 @@ import (
 
 var privatekey = "04c27ac63911f885e270848d41934e5848f6efa0c89665d5135aa4b11208e6a73e806beacb6c90b2005c1d24c7cb98d40964c245f5a082e36a85dbc1e1668503"
 var publickey = "3e806beacb6c90b2005c1d24c7cb98d40964c245f5a082e36a85dbc1e1668503"
-var encode = ""
+var encode = "v4.public.eyJleHAiOiIyMDI0LTAxLTIyVDIxOjM4OjA4KzA3OjAwIiwiaWF0IjoiMjAyNC0wMS0yMlQxOTozODowOCswNzowMCIsIm5hbWUiOiJJYnJvaGltIE11YmFyb2siLCJuYmYiOiIyMDI0LTAxLTIyVDE5OjM4OjA4KzA3OjAwIiwicm9sZSI6ImFkbWluIiwidXNlcm5hbWUiOiJpYnJvaGltIn1pQN0AgXC75PpWUC_eEEs254GyyGz1xMgL6UWKLooLry2dUF-54Smt1nn7zFeAZ1BpxznzANBJtCJxZK_RfeoK"
 var mongoenv = ""
 var dbname = ""
 var collname = ""
@@ -20,9 +20,9 @@ func TestGeneratePaseto(t *testing.T) {
 }
 
 func TestEncode(t *testing.T) {
-	name := "Test Nama"
-	username := "Test Username"
-	role := "Test Role"
+	name := "Ibrohim Mubarok"
+	username := "ibrohim"
+	role := "admin"
 
 	tokenstring, err := Encode(name, username, role, privatekey)
 	fmt.Println("error : ", err)

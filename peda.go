@@ -720,7 +720,7 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	if header == "" {
 		response.Status = true
 		response.Message = "Berhasil Input data tanpa login"
-		datakomentar.Name = "Anonymous"
+		datakomentar.Username = "Anonymous"
 		datakomentar.Tanggal = timeStringKomentar
 		InsertKomentar(mconn, collname, datakomentar)
 		return ReturnStruct(response)
@@ -773,7 +773,7 @@ func TambahKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 
 	// Insert the komentar data
 	response.Status = true
-	datakomentar.Name = tokenname
+	datakomentar.Username = tokenusername
 	datakomentar.Tanggal = timeStringKomentar
 	InsertKomentar(mconn, collname, datakomentar)
 	response.Message = "Berhasil Input data"
@@ -895,13 +895,13 @@ func UpdateKomentar(publickey, mongoenv, dbname, collname string, r *http.Reques
 	namakomentator := FindKomentar(mconn, collname, datakomentar)
 
 	// Validasi apakah user memiliki akses (admin atau pemilik komentar)
-	if tokenname != namakomentator.Name {
+	if tokenusername != namakomentator.Username {
 		response.Message = "Anda tidak memiliki akses"
 		return ReturnStruct(response)
 	}
 
 	// Lakukan edit pada komentar
-	datakomentar.Name = tokenname
+	datakomentar.Username = tokenusername
 	datakomentar.ID_berita = namakomentator.ID_berita
 	datakomentar.Tanggal = namakomentator.Tanggal
 	EditKomentar(mconn, collname, datakomentar)
@@ -963,7 +963,7 @@ func HapusKomentar(publickey, mongoenv, dbname, collname string, r *http.Request
 	namakomentator := FindKomentar(mconn, collname, datakomentar)
 
 	// Check user role for authorization
-	if !(tokenrole == "admin" || tokenname == namakomentator.Name) {
+	if !(tokenrole == "admin" || tokenusername == namakomentator.Username) {
 		response.Message = "Anda tidak memiliki akses"
 		return ReturnStruct(response)
 	}
