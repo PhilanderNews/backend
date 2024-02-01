@@ -490,6 +490,37 @@ func TambahBerita(publickey, mongoenv, dbname, collname string, r *http.Request)
 		return ReturnStruct(response)
 	}
 
+	if databerita.Konten.Paragraf1 == "" {
+		databerita.Konten.Paragraf1 = " "
+	}
+	if databerita.Konten.Paragraf2 == "" {
+		databerita.Konten.Paragraf2 = " "
+	}
+	if databerita.Konten.Paragraf3 == "" {
+		databerita.Konten.Paragraf3 = " "
+	}
+	if databerita.Konten.Paragraf4 == "" {
+		databerita.Konten.Paragraf4 = " "
+	}
+	if databerita.Konten.Paragraf5 == "" {
+		databerita.Konten.Paragraf5 = " "
+	}
+	if databerita.Konten.Paragraf6 == "" {
+		databerita.Konten.Paragraf6 = " "
+	}
+	if databerita.Konten.Paragraf7 == "" {
+		databerita.Konten.Paragraf7 = " "
+	}
+	if databerita.Konten.Paragraf8 == "" {
+		databerita.Konten.Paragraf8 = " "
+	}
+	if databerita.Konten.Paragraf9 == "" {
+		databerita.Konten.Paragraf9 = " "
+	}
+	if databerita.Konten.Paragraf10 == "" {
+		databerita.Konten.Paragraf10 = " "
+	}
+
 	// Insert berita data into the database
 	response.Status = true
 	databerita.Penulis = tokenname
@@ -609,6 +640,36 @@ func UpdateBerita(publickey, mongoenv, dbname, collname string, r *http.Request)
 
 	// Check if the berita exists
 	if idBeritaExists(mongoenv, dbname, databerita) {
+		if databerita.Konten.Paragraf1 == "" {
+			databerita.Konten.Paragraf1 = " "
+		}
+		if databerita.Konten.Paragraf2 == "" {
+			databerita.Konten.Paragraf2 = " "
+		}
+		if databerita.Konten.Paragraf3 == "" {
+			databerita.Konten.Paragraf3 = " "
+		}
+		if databerita.Konten.Paragraf4 == "" {
+			databerita.Konten.Paragraf4 = " "
+		}
+		if databerita.Konten.Paragraf5 == "" {
+			databerita.Konten.Paragraf5 = " "
+		}
+		if databerita.Konten.Paragraf6 == "" {
+			databerita.Konten.Paragraf6 = " "
+		}
+		if databerita.Konten.Paragraf7 == "" {
+			databerita.Konten.Paragraf7 = " "
+		}
+		if databerita.Konten.Paragraf8 == "" {
+			databerita.Konten.Paragraf8 = " "
+		}
+		if databerita.Konten.Paragraf9 == "" {
+			databerita.Konten.Paragraf9 = " "
+		}
+		if databerita.Konten.Paragraf10 == "" {
+			databerita.Konten.Paragraf10 = " "
+		}
 		databerita.Penulis = tokenname
 		databerita.Waktu = namapenulis.Waktu
 		EditBerita(mconn, collname, databerita)
